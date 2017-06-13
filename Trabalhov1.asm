@@ -4,17 +4,86 @@ INCLUDE Irvine32.inc
 .data
 	tempo BYTE "TEMPO:", 0				;Nome do marcador de Tempo 
 	pontuacao BYTE "PONTUACAO:", 0		;Nome do marcador de Pontuação
-	biniciar Byte "INICIAR",0			;Nome do botão para iniciar o jogo
-	biniciari Byte "Pressione w",0		;Nome da informação de como acessar o inicio do jogo
-	bcreditos Byte "CREDITOS",0			;Nome do botão para os creditos
-	bcreditosi Byte "Pressione a",0		;Nome da  informação de como acessar os créditos
-	bcomoJogar Byte "COMO JOGAR",0		;Nome do botão para as instruções
-	bcomoJogari Byte "Pressione s",0		;Nome da informação de como acessar as instruções
+	biniciar BYTE "INICIAR",0			;Nome do botão para iniciar o jogo
+	biniciari BYTE "Pressione w",0		;Nome da informação de como acessar o inicio do jogo
+	bcreditos BYTE "CREDITOS",0			;Nome do botão para os creditos
+	bcreditosi BYTE "Pressione a",0		;Nome da  informação de como acessar os créditos
+	bcomoJogar BYTE "COMO JOGAR",0		;Nome do botão para as instruções
+	bcomoJogari BYTE "Pressione s",0	;Nome da informação de como acessar as instruções
 	nome BYTE "CLOCK COLORS", 0			;Nome do Jogo
 	time BYTE 0							;Armazena o tempo do jogo
 	score BYTE 0						;Armazena a pontuação do jogo
+	posSeta BYTE 0						;Armazena a posição da seta no menu 
 	
 .code
+
+PrintSeta PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
+	push dx
+	
+	mov ax, 0
+	mov al, posSeta
+	mov dx, 3
+	mul dx
+	add ax, 5
+	
+	mov dl, 10								
+	mov dh, al
+	call GOTOXY
+	
+	mov eax, black+(black*16)
+	call SETTEXTCOLOR
+	
+	mov al, ' '
+	call WRITECHAR
+	call WRITECHAR
+	
+	pop dx
+	
+	cmp dx, 0026h
+	jne LPS1
+	cmp posSeta, 0000h
+	jbe LPS2
+	dec posSeta
+LPS1:	
+	cmp dx, 0028h
+	jne LPS2
+	cmp posSeta, 0002h
+	jae LPS2
+	inc posSeta
+LPS2:
+	
+	mov ax, 0
+	mov al, posSeta
+	mov dx, 3
+	mul dx
+	add ax, 5
+	
+	mov dl, 10								
+	mov dh, al
+	call GOTOXY
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
+	mov dl, 0
+	mov dh, 16
+	call GOTOXY
+	
+	ret
+PrintSeta ENDP	
+	
+	
+
 main PROC
 	jmp start
 
@@ -188,18 +257,25 @@ ScoreTela:
 	call WRITEDEC
 	ret
 	
-
 start:
 	call CLRSCR								;IRVINE CLRSCR - Limpa a tela
 	call Bordas
 	call Plataformas
 	call TelaInicio
 	
-	call READCHAR
-	cmp al, 'w'
-	je jogo
-	cmp al, 'W'
-	jne prox1
+LookForKey:
+    mov  eax,50          					;Tempo para o SO esperar
+    call Delay           					; (otherwise, some key presses are lost)
+
+    call ReadKey         					;Busca por entradas no teclado
+    jz   LookForKey      					;Nenhuma tecla pressionada ainda
+
+	call PrintSeta
+
+    cmp    dx,000Dh  						;Compara a entrada do teclado com "enter"
+    jne    LookForKey    					;Se a tecla não for enter, volta para o label LookForKey
+	
+
 	
 jogo:
 	call CLRSCR	
