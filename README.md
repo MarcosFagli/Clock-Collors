@@ -3,4 +3,13 @@ Trabalho executado na disciplina Arquitetura e Organização de Computadores 2 c
 
 Para mais detalhes quanto ao projeto e implementação, verificar os arquivos Relatorio_1 e Relatorio_2, que são os relatórios apresentados ao professor sobre o desenvolvimento do trabalho.
 
-Até a presente data 13/06, os arquivos TesteRandom, Trabalhov1 e TesteCor não estão documentandos - até a finalização do projeto os arquivos dverão estar documentados (10/07/2017) - mas o TesteRandom gera um número aleatório utilizando a biblioteca Irvine que gera um número pseudo-aleatório. O arquivo TesteCor invoca uma cor de um vetor de cores armazendos na memória, definidas na biblioteca Irvine.
+Até a presente data 13/06, os arquivos Trabalhov1, TesteRandom, TesteLookForKey e TesteCor  não estão documentandos - até a finalização do projeto os arquivos dverão estar documentados (10/07/2017)- Sendo:
+  -TesteRandom gera um número aleatório utilizando a biblioteca Irvine que gera um número pseudo-aleatório; 
+  -O arquivo TesteCor invoca uma cor de um vetor de cores armazendos na memória, definidas na biblioteca Irvine;
+  -O arquivo TesteLookForKey lê uma letra do teclado ou aguarda um tempo (exemplo retirado da biblioteca Irvine: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm, acessado em 13/06/2017 as 10:30h):
+    -Código das teclas utilizadas:
+      Seta para cima:         ah = 48h     dx = 0026h
+      Seta para baixo:        ah = 50h     dx = 0028h
+      Seta para a esquerda:   ah = 4Bh     dx = 0025h
+      Seta para a direita:    ah = 4Dh     dx = 0027h
+      Enter:                  ah = 1Ch     dx = 000Dh
