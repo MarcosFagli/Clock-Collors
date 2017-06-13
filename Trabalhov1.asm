@@ -13,6 +13,41 @@ INCLUDE Irvine32.inc
 	posSeta BYTE 0						;Armazena a posição da seta no menu 
 	
 .code
+LimpaTela PROC
+	mov eax, black+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 0								
+	mov dh, 0
+	call GOTOXY
+	
+	mov ecx, 16							;Trecho para impressão da primeira linha da matriz do jogo, imprime 41 "!"
+	
+LLP1:					
+	mov dl, 0
+	mov dh, cl
+	call GOTOXY
+	
+	push ecx
+	
+	mov ecx, 41
+LLP2:
+	mov al, '.'
+	call WRITECHAR
+	loop LLP2
+	
+	pop ecx
+	loop LLP1
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 0								
+	mov dh, 0
+	call GOTOXY
+	
+	ret
+LimpaTela ENDP
 
 PrintSeta PROC
 ;Imprime uma seta na posição desejada
@@ -124,6 +159,11 @@ L3:
 Bordas ENDP	
 	
 Plataformas PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
 	mov dl, 1								;Trecho para imprimir as 4 plataformas existentes no jogo (loop aninhados)
 	mov dh, 4
 	call GOTOXY
@@ -153,6 +193,11 @@ L4:
 Plataformas ENDP
 	
 TelaInicio PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 
@@ -190,7 +235,12 @@ TelaInicio PROC
 	ret
 TelaInicio ENDP
 
-TelaJogo PROC									
+TelaJogo PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:										
 	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
 	mov dl, 9
@@ -210,6 +260,11 @@ TelaJogo PROC
 TelaJogo ENDP
 
 TelaIntrucoes PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 
@@ -221,6 +276,11 @@ TelaIntrucoes PROC
 TelaIntrucoes ENDP
 	
 TempoTela PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
 	mov dl, 16
 	mov dh, 1
 	call GOTOXY
@@ -235,6 +295,11 @@ TempoTela PROC
 TempoTela ENDP
 	
 ScoreTela PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
 	mov dl, 32
 	mov dh, 1
 	call GOTOXY
@@ -246,12 +311,29 @@ ScoreTela ENDP
 
 	
 main PROC
-
-start:
 	call CLRSCR								;IRVINE CLRSCR - Limpa a tela
+start:
+	call LimpaTela
 	call Bordas
 	call Plataformas
 	call TelaInicio
+	mov posSeta, 0
+	
+	mov dl, 10								
+	mov dh, 5
+	call GOTOXY
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
+	mov dl, 0
+	mov dh, 16
+	call GOTOXY
 	
 AguardaTecla1:
     mov  eax,50          					;Tempo para o SO esperar
@@ -272,7 +354,7 @@ LS1:
 	je creditos
 	
 jogo:
-	call CLRSCR	
+	call LimpaTela	
 	call Bordas
 	call Plataformas
 	call TelaJogo
@@ -282,10 +364,40 @@ jogo:
 	mov eax, 1000
 	call DELAY
 	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
+	mov eax, 1000
+	call DELAY
+	call TempoTela
 	jmp fim
 	
 instrucoes:
-	call CLRSCR	
+	call LimpaTela	
 	call Bordas
 	call Plataformas
 	;call TelaInstrucoes
@@ -293,7 +405,7 @@ instrucoes:
 	jmp start
 	
 creditos:
-	call CLRSCR	
+	call LimpaTela	
 	call Bordas
 	call Plataformas
 	;call TelaCreditos
@@ -310,4 +422,5 @@ fim:
 
 exit
 main ENDP
+END main
 END main
