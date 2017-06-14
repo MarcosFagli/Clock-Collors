@@ -14,3 +14,5 @@ Até a presente data 13/06, os arquivos Trabalhov1, TesteRandom, TesteLookForKey
 			Seta para a esquerda:   ah = 4Bh     dx = 0025h
 			Seta para a direita:    ah = 4Dh     dx = 0027h
 			Enter:                  ah = 1Ch     dx = 000Dh
+
+No arquivo Trabalhov1.rar existe o arquivo executavel do jogo, alguns navegaores e sistemas operacionais detectam virus em arquivos .exe, assim, caso deseje baixar somente o .exe, e sua plataforma não esteja liberando o download, baixe o Trabalhov1.rar, descompacte e exetute.
