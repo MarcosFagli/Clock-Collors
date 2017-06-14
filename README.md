@@ -1,6 +1,5 @@
 # Clock-Collors
-Trabalho executado na disciplina Arquitetura e Organização de Computadores 2 com o objetivo de construir um jogo na limguagem Assembly utilizando a biblioteca Irvine e o montador MASM
-
+Trabalho executado na disciplina Arquitetura e Organização de Computadores 2 com o objetivo de construir um jogo na linguagem Assembly utilizando a biblioteca Irvine e o montador MASM
 Para mais detalhes quanto ao projeto e implementação, verificar os arquivos Relatorio_1 e Relatorio_2, que são os relatórios apresentados ao professor sobre o desenvolvimento do trabalho.
 
 Até a presente data 13/06, os arquivos Trabalhov1, TesteRandom, TesteLookForKey e TesteCor  não estão documentandos - até a finalização do projeto os arquivos dverão estar documentados (10/07/2017)- Sendo:
