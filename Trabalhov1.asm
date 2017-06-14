@@ -576,27 +576,27 @@ LTI1:
 	call SETTEXTCOLOR
 	
 	mov dl, 5
-	mov dh, 8
+	mov dh, 7
 	call GOTOXY
 	mov edx, OFFSET mInstrucoes15
 	call WRITESTRING
 	mov dl, 5
-	mov dh, 11
+	mov dh, 10
 	call GOTOXY
 	mov edx, OFFSET mInstrucoes16
 	call WRITESTRING
 	mov dl, 3
-	mov dh, 12
+	mov dh, 11
 	call GOTOXY
 	mov edx, OFFSET mInstrucoes17
 	call WRITESTRING
 	mov dl, 5
-	mov dh, 15
+	mov dh, 14
 	call GOTOXY
 	mov edx, OFFSET mInstrucoes18
 	call WRITESTRING
 	mov dl, 3
-	mov dh, 16
+	mov dh, 15
 	call GOTOXY
 	mov edx, OFFSET mInstrucoes19
 	call WRITESTRING
@@ -615,6 +615,19 @@ LTI1:
 	mov al, '-'
 	call WRITECHAR
 	
+	movzx eax, tMaxX
+	sub eax, 5
+	mov dl, al	
+	movzx eax, tMaxY
+	sub eax, 2
+	mov dh, al
+	call GOTOXY
+	
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
 	mov dl, 0
 	mov dh, tMaxY
 	call GOTOXY
@@ -626,6 +639,8 @@ LTI2:
     jz   LTI2
 	cmp  dx, 0025h
 	je LTI3
+	cmp dx, 0027h
+	jne LTI2
 	
 	ret
 TelaInstrucoes ENDP
@@ -728,15 +743,36 @@ TelaCreditos PROC
 	mov edx, OFFSET mcreditos12
 	call WRITESTRING
 	
+	movzx eax, tMaxX
+	sub eax, 5
+	mov dl, al	
+	movzx eax, tMaxY
+	sub eax, 2
+	mov dh, al
+	call GOTOXY
+	
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+	
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
 	mov dl, 0
 	mov dh, tMaxY
 	call GOTOXY
 	
-LTC2:
-    mov  eax, 50
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+LTI1:
+    mov  eax,50
     call Delay
     call ReadKey
-    jz   LTC2
+    jz   LTI1
+	cmp  dx, 0027h
+	jne LTI1
 	
 	ret
 TelaCreditos ENDP
@@ -808,6 +844,8 @@ AguardaTecla1:
     jz   AguardaTecla1      					;Nenhuma tecla pressionada ainda
 	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
 	je LS1
+	cmp dx, 0051h
+	je fim
 	call PrintSeta
     jne  AguardaTecla1    					;Se a tecla não for enter, volta para o label AguardaTecla1
 	
@@ -820,31 +858,7 @@ LS1:
 	je creditos
 	
 jogo:
-	call LimpaTela	
-	call Bordas
-	call Plataformas
 	call TelaJogo
-	call ScoreTela
-	call TempoTela
-	
-	
-	mov bl, 15
-	mov bh, 15
-	call ImpPerso
-	
-	mov eax, 1000
-	call DELAY
-	call TempoTela
-	
-	mov bl, 15
-	mov bh, 15
-	call delPerso
-	
-	mov eax, 1000
-	call DELAY
-	call TempoTela
-	
-	
 	jmp fim
 	
 instrucoes:
@@ -856,8 +870,10 @@ creditos:
 	jmp start
 
 fim:
+	movzx eax, tMaxY
+	inc eax
 	mov dl, 0
-	mov dh, 17
+	mov dh, al 
 	call GOTOXY
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
@@ -865,4 +881,5 @@ fim:
 
 exit
 main ENDP
+END main
 END main
