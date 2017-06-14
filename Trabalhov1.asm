@@ -14,7 +14,7 @@ INCLUDE Irvine32.inc
 	bcreditos BYTE "CREDITOS",0			;Nome do botão para os creditos
 	bcomoJogar BYTE "COMO JOGAR",0		;Nome do botão para as instruções
 	nome BYTE "CLOCK COLORS", 0			;Nome do Jogo
-	time BYTE 0							;Armazena o tempo do jogo
+	time BYTE 90						;Armazena o tempo do jogo
 	score BYTE 0						;Armazena a pontuação do jogo
 	posSeta BYTE 0						;Armazena a posição da seta no menu 
 	tMaxX BYTE 60						;Armazena a quantidade de colunas do ecrã do jogo
@@ -24,6 +24,7 @@ INCLUDE Irvine32.inc
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
+	contTime BYTE 0							;Contador auxiliar para o tempo
 	coresDisp WORD yellow, blue, green, 
 					cyan, red, magenta, 
 					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
@@ -507,14 +508,23 @@ TelaJogo PROC
 	
 	call SorteiaCores
 	call CorSelPlat
+	
 LTJ1:
 	mov cont, 0
+	inc contTime
+	cmp contTime, 2
+	jnae LTJ3
+	call TempoTela
+	mov contTime, 0
+LTJ3:
 	call TrocaCorPlat
 LTJ2:
 	mov eax, 50
 	inc cont
 	cmp cont, 10
 	ja LTJ1
+	cmp time, 0
+	jbe fimTelaJogo
     call Delay
     call ReadKey
     jz LTJ2
@@ -915,7 +925,7 @@ TempoTela PROC
 	call GOTOXY
 	movzx eax, time
 	call WRITEDEC
-	inc eax
+	dec eax
 	mov time, al
 	mov dl, 0
 	mov dh, tMaxY
