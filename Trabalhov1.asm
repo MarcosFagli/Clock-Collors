@@ -1,5 +1,4 @@
 ;Dados referentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
-;Dados referentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
 ;Este jogo refere-se ao trabalho final apresentado a disciplina de Laboratório de Arquitetura e Organização de Computadores do Deparatamento de Computação da Universidade Federal de São Carlos -  UFSCar
 ;Docente responsável: Professor Doutor Luciano Neris
 ;Autores:
@@ -20,8 +19,11 @@ INCLUDE Irvine32.inc
 	posSeta BYTE 0						;Armazena a posição da seta no menu 
 	tMaxX BYTE 60						;Armazena a quantidade de colunas do ecrã do jogo
 	tMaxY BYTE 26						;Armazena a quantidade de linhas do ecrã do jogo
+	posXB BYTE 30						;Armazena a posição X do personagem
+	posYB BYTE 24						;Armazena a posição Y do personagem
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
+	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
 	coresDisp WORD yellow, blue, green, 
 					cyan, red, magenta, 
 					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
@@ -141,10 +143,10 @@ ImpPerso PROC
 	mov al, '\'
 	call WRITECHAR
 	
-	mov dh, bh
 	mov dl, bl
-	inc dh
 	dec dl
+	mov dh, bh
+	inc dh
 	call GOTOXY
 	
 	mov al, '/'
@@ -174,17 +176,17 @@ delPerso PROC
 	mov eax, black+(black*16)
 	call SETTEXTCOLOR
 	
-	mov dh, bh
-	mov dl, bl
-	sub dh, 1
+	mov dl, posXB
+	mov dh, posYB
+	dec dh
 	call GOTOXY
 	
 	mov al, ' '
 	call WRITECHAR
 	
-	mov dl, bl
+	mov dl, posXB
 	dec dl
-	mov dh, bh
+	mov dh, posYB
 	call GOTOXY
 	
 	mov ecx, 3
@@ -193,8 +195,8 @@ LDP1:
 	call WRITECHAR
 	loop LDP1
 	
-	mov dh, bh
-	mov dl, bl
+	mov dh, posYB
+	mov dl, posXB
 	inc dh
 	dec dl
 	call GOTOXY
@@ -432,6 +434,42 @@ L1: mov  eax,9
 	ret
 SorteiaCores ENDP
 
+ProcSetaDir PROC
+	movzx eax, tMaxX
+	sub eax, 3
+	cmp posXB, al
+	jae fimProcDir
+	
+	call delPerso
+	
+	inc posXB
+	mov bl, posXB
+	mov al, tMaxY
+	sub al, 2
+	mov bh, al 
+	call ImpPerso
+	
+fimProcDir:
+	ret
+ProcSetaDir ENDP
+
+ProcSetaEsq PROC
+	cmp posXB, 2
+	jbe fimProcEsq
+	
+	call delPerso
+	
+	dec posXB
+	mov bl, posXB
+	mov al, tMaxY
+	sub al, 2
+	mov bh, al 
+	call ImpPerso
+	
+fimProcEsq:
+	ret	
+ProcSetaEsq ENDP
+
 TelaJogo PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -463,88 +501,53 @@ TelaJogo PROC
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
+	mov bl, posXB
+	mov bh, posYB
+	call ImpPerso
 	
 	call SorteiaCores
-	call CorTela
+	call CorSelPlat
+LTJ1:
+	mov cont, 0
+	call TrocaCorPlat
+LTJ2:
+	mov eax, 50
+	inc cont
+	cmp cont, 10
+	ja LTJ1
+    call Delay
+    call ReadKey
+    jz LTJ2
+
+	cmp  dx, 0026h
+	je setaCima
+	cmp dx, 0025h
+	je setaEsq
+	cmp dx, 0027h
+	je setaDir
+	cmp dx, 0051h
+	je fimTelaJogo
+	jmp LTJ2
 	
+setaCima:
+	;call PrcSetaCima
+	jmp LTJ2
 	
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay 
-	call SorteiaCores
-	call CorTela
-	mov eax, 2000
-	call delay	
+setaEsq:
+	call ProcSetaEsq
+	jmp LTJ2
 	
-	
-	
-	
-	
-	
-	;call LimpaTela	
-	;call Bordas
-	;call Plataformas
-	;call TelaJogo
-	;call ScoreTela
-	;call TempoTela
-	
-	
-	;mov bl, 15
-	;mov bh, 15
-	;call ImpPerso
-	
-	;mov eax, 1000
-	;call DELAY
-	;call TempoTela
-	
-	;mov bl, 15
-	;mov bh, 15
-	;call delPerso
-	
-	;mov eax, 1000
-	;call DELAY
-	;call TempoTela
+setaDir:
+	call ProcSetaDir
+	jmp LTJ2
 	
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+fimTelaJogo:	
 	ret
 TelaJogo ENDP
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 TelaInstrucoes PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -934,7 +937,7 @@ ScoreTela PROC
 	ret
 ScoreTela ENDP
 
-CorTela PROC
+CorSelPlat PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
 ;
@@ -972,8 +975,37 @@ CorTela PROC
 	call GOTOXY
 
 	ret
-CorTela ENDP
+CorSelPlat ENDP
 
+TrocaCorPlat PROC
+	call Randomize              ;Sets seed
+    mov  eax, 9					;Keeps the range 0 - 8
+
+    call RandomRange
+	imul ax, TYPE coresDisp
+	mov bx, [coresDisp + ax]	
+
+	movzx eax, bx
+	call SETTEXTCOLOR
+
+	mov al, tMaxY
+	sub al, 5
+	mov dl, 1
+	mov dh, al
+	call GOTOXY
+
+	movzx eax, tMaxX
+	sub eax, 2
+	mov ecx, eax	
+LTCP1:
+	mov al, ':'
+	call WRITECHAR
+	loop LTCP1
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	ret
+TrocaCorPlat ENDP
 	
 main PROC
 	call CLRSCR								;IRVINE CLRSCR - Limpa a tela
@@ -1022,7 +1054,7 @@ LS1:
 	
 jogo:
 	call TelaJogo
-	jmp fim
+	jmp start
 	
 instrucoes:
 	call TelaInstrucoes
