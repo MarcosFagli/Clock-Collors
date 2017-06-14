@@ -1,4 +1,5 @@
 ;Dados referentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
+;Dados referentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
 ;Este jogo refere-se ao trabalho final apresentado a disciplina de Laboratório de Arquitetura e Organização de Computadores do Deparatamento de Computação da Universidade Federal de São Carlos -  UFSCar
 ;Docente responsável: Professor Doutor Luciano Neris
 ;Autores:
@@ -462,14 +463,41 @@ TelaJogo PROC
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
+	
+	call SorteiaCores
+	call CorTela
+	
+	
 	mov eax, 2000
 	call delay 
-	
-	
-	
-	
-	
-	
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay 
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay
+	mov eax, 2000
+	call delay 
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay 
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay
+	mov eax, 2000
+	call delay 
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay 
+	call SorteiaCores
+	call CorTela
+	mov eax, 2000
+	call delay	
 	
 	
 	
@@ -912,6 +940,38 @@ CorTela PROC
 ;
 ;
 ;Retorna:	
+	mov dl, 49
+	mov dh, 1
+	call GOTOXY
+
+	movzx eax, corSele
+	mov edx, 00000016
+	mul edx
+	call SETTEXTCOLOR
+	
+	mov al, ' '
+	call WRITECHAR
+	
+	mov dl, 51
+	mov dh, 1
+	call GOTOXY
+	
+	movzx eax, (corSele+2)
+	mov edx, 00000016
+	mul edx
+	call SETTEXTCOLOR
+	
+	mov al, ' '
+	call WRITECHAR
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+
+	ret
 CorTela ENDP
 
 	
