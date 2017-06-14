@@ -29,6 +29,7 @@ INCLUDE Irvine32.inc
 					cyan, red, magenta, 
 					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
 	corSele WORD 2 DUP(?)				;Vetor de cores sorteadas para as plataformas
+	corPlatAtual WORD 1 DUP(?)			;Armazena a cor atual da plataforma imediatamente acima do personagem
 	
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nas instrucões
 	mInstrucoes1 BYTE "ESTE JOGO CONSISTE EM GUIAR O ETEVALDO ATE A",0
@@ -408,6 +409,11 @@ TelaInicio PROC
 TelaInicio ENDP
 
 SorteiaCores PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
     call Randomize              ;Sets seed
     mov  eax,9					;Keeps the range 0 - 8
 
@@ -436,6 +442,11 @@ L1: mov  eax,9
 SorteiaCores ENDP
 
 ProcSetaDir PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
 	movzx eax, tMaxX
 	sub eax, 3
 	cmp posXB, al
@@ -455,6 +466,11 @@ fimProcDir:
 ProcSetaDir ENDP
 
 ProcSetaEsq PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
 	cmp posXB, 2
 	jbe fimProcEsq
 	
@@ -471,6 +487,32 @@ fimProcEsq:
 	ret	
 ProcSetaEsq ENDP
 
+PrcSetaCima PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
+	mov ax, corPlatAtual
+	cmp ax, corSele
+	je igual
+	mov ax, corPlatAtual
+	cmp ax, (corSele+2)
+	jne diferente
+	
+igual:
+	inc score
+	jmp fim
+	
+diferente:
+	mov eax, 0
+
+fim:
+	ret
+	
+PrcSetaCima ENDP
+
+
 TelaJogo PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -480,6 +522,8 @@ TelaJogo PROC
 	call LimpaTela	
 	call Bordas
 	call Plataformas
+	call TempoTela
+	call ScoreTela
 
 	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
@@ -519,6 +563,7 @@ LTJ1:
 LTJ3:
 	call TrocaCorPlat
 LTJ2:
+	call ScoreTela
 	mov eax, 50
 	inc cont
 	cmp cont, 10
@@ -540,7 +585,7 @@ LTJ2:
 	jmp LTJ2
 	
 setaCima:
-	;call PrcSetaCima
+	call PrcSetaCima
 	jmp LTJ2
 	
 setaEsq:
@@ -994,6 +1039,8 @@ TrocaCorPlat PROC
     call RandomRange
 	imul ax, TYPE coresDisp
 	mov bx, [coresDisp + ax]	
+	
+	mov corPlatAtual, bx
 
 	movzx eax, bx
 	call SETTEXTCOLOR
@@ -1064,6 +1111,7 @@ LS1:
 	
 jogo:
 	call TelaJogo
+	mov time, 90
 	jmp start
 	
 instrucoes:
