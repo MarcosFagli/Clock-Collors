@@ -1,7 +1,13 @@
-;Dados rferentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
+;Dados referentes a utilização da biblioteca IRVINE retirado de: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm
+;Este jogo refere-se ao trabalho final apresentado a disciplina de Laboratório de Arquitetura e Organização de Computadores do Deparatamento de Computação da Universidade Federal de São Carlos -  UFSCar
+;Docente responsável: Professor Doutor Luciano Neris
+;Autores:
+;	Bruna Zamith Santos		Ra 628093
+;	Marcos Augusto Faglioni Junior		Ra 628301
 INCLUDE Irvine32.inc
 
 .data
+	cor BYTE "COR SORTEADA:",0			;Nome do marcador das cores selecionadas
 	tempo BYTE "TEMPO:", 0				;Nome do marcador de Tempo 
 	pontuacao BYTE "PONTUACAO:", 0		;Nome do marcador de Pontuação
 	biniciar BYTE "INICIAR",0			;Nome do botão para iniciar o jogo
@@ -15,18 +21,22 @@ INCLUDE Irvine32.inc
 	tMaxY BYTE 26						;Armazena a quantidade de linhas do ecrã do jogo
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
+	coresDisp WORD yellow, blue, green, 
+					cyan, red, magenta, 
+					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
+	corSele WORD 2 DUP(?)				;Vetor de cores sorteadas para as plataformas
 	
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nas instrucões
-	mInstrucoes1 BYTE "ESTE JOGO CONSITE EM GUIAR O ETEVALDO ATE A",0
-	mInstrucoes2 BYTE "PLATAFORA MAIS ALTA QUE O JOGADOR CONSEGUIR CHEGAR",0
+	mInstrucoes1 BYTE "ESTE JOGO CONSISTE EM GUIAR O ETEVALDO ATE A",0
+	mInstrucoes2 BYTE "PLATAFORMA MAIS ALTA QUE O JOGADOR CONSEGUIR CHEGAR",0
 	mInstrucoes3 BYTE "EM 90 SEGUNDOS.",0
 	
-	mInstrucoes4 BYTE "NESSA AVENTURA O ETEVALDO SO PODE PULAR SE A",0 
+	mInstrucoes4 BYTE "NESSA AVENTURA, O ETEVALDO SO PODE PULAR SE A",0 
 	mInstrucoes5 BYTE "PLATAFORMA IMEDIATAMENTE ACIMA DELE ESTIVER COM",0 
-	mInstrucoes6 BYTE "UMA DAS CORES SELECIONADAS.",0
+	mInstrucoes6 BYTE "UMA DAS DUAS CORES SORTEADAS.",0
 	
-	mInstrucoes7 BYTE "PARA CADA PLATAFORMA EXISTIRA OITO POSSIVEIS",0
-	mInstrucoes8 BYTE "CORES, E NO TOTAL SERA SELECIONADA DUAS DESSAS CORES",0
+	mInstrucoes7 BYTE "PARA CADA PLATAFORMA EXISTIRAO OITO POSSIVEIS",0
+	mInstrucoes8 BYTE "CORES, E NO TOTAL SERAO SELECIONADAS DUAS DESSAS CORES",0
 	mInstrucoes9 BYTE "QUE LIBERARAO A PASSAGEM DO ET PARA A PLATAFORMA ACIMA.",0
 	
 	mInstrucoes10 BYTE "ALEM DE RESPEITAR AS CORES, DEVE-SE TOMAR CUIDADO",0
@@ -44,9 +54,9 @@ INCLUDE Irvine32.inc
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nos crédito
 	mcreditos1 BYTE "JOGO DESENVOLVIDO PARA A DISCIPLINA DE LABORATORIO DE",0
 	mcreditos2 BYTE "ARQUITETURA E ORGANIZACAO DE COMPUTADORES, MINISTRADA",0
-	mcreditos3 BYTE "MINISTRADA PELO DOCENTE LUCIANO NERIS, NA UNIVERSIDADE",0
-	mcreditos4 BYTE "FEDERAL DE SAO CARLOS - UFSCAR, COM ENTREGA NO",0	
-	mcreditos5 BYTE "PRIMEIRO SEMESTRE DE 2017.",0
+	mcreditos3 BYTE "PELO DOCENTE LUCIANO NERIS, NA UNIVERSIDADE FEDERAL",0
+	mcreditos4 BYTE "DE SAO CARLOS - UFSCAR, COM ENTREGA NO PRIMEIRO",0	
+	mcreditos5 BYTE "SEMESTRE DE 2017.",0
 	
 	mcreditos6 BYTE "PROJETO LICENCIADO POR GLP-3.0 E DISPONIVEL NO GITHUB",0
 	mcreditos7 BYTE "EM: GITHUB.COM/MARCOSFAGLI/CLOCK-COLLORS",0
@@ -56,8 +66,6 @@ INCLUDE Irvine32.inc
 	mcreditos10 BYTE "RA 628093",0
 	mcreditos11 BYTE "MARCOS AUGUSTO FAGLIONI JUNIOR",0			
 	mcreditos12 BYTE "RA 628301",0
-	
-	
 	
 .code
 LimpaTela PROC
@@ -395,12 +403,44 @@ TelaInicio PROC
 	ret
 TelaInicio ENDP
 
+SorteiaCores PROC
+    call Randomize              ;Sets seed
+    mov  eax,9					;Keeps the range 0 - 8
+
+    call RandomRange
+    mov  corSele,ax            ;First random number
+
+L1: mov  eax,9
+	call RandomRange
+    cmp ax, corSele          ;Checks if the second number is the same as the first
+    je L1                   		;If it is, repeat call
+    mov corSele[TYPE corSele],ax            ;Second random number
+	
+	;Salva primeira cor
+	mov bx, corSele
+	imul bx, TYPE corSele
+	mov ax, [coresDisp + bx]
+	mov corSele, ax
+	
+	;Salva segunda cor
+	mov bx, corSele[TYPE corSele]
+	imul bx, TYPE corSele
+	mov ax, [coresDisp + bx]
+	mov corSele[TYPE corSele], ax
+
+	ret
+SorteiaCores ENDP
+
 TelaJogo PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
 ;
 ;
-;Retorna:										
+;Retorna:	
+	call LimpaTela	
+	call Bordas
+	call Plataformas
+
 	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
 	mov dl, 9
@@ -413,9 +453,65 @@ TelaJogo PROC
 	call GOTOXY
 	mov edx, OFFSET pontuacao
 	call WRITESTRING
+	mov dl, 35
+	mov dh, 1
+	call GOTOXY
+	mov edx, OFFSET cor
+	call WRITESTRING
 	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
+	
+	mov eax, 2000
+	call delay 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	;call LimpaTela	
+	;call Bordas
+	;call Plataformas
+	;call TelaJogo
+	;call ScoreTela
+	;call TempoTela
+	
+	
+	;mov bl, 15
+	;mov bh, 15
+	;call ImpPerso
+	
+	;mov eax, 1000
+	;call DELAY
+	;call TempoTela
+	
+	;mov bl, 15
+	;mov bh, 15
+	;call delPerso
+	
+	;mov eax, 1000
+	;call DELAY
+	;call TempoTela
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	ret
 TelaJogo ENDP
 
@@ -810,6 +906,13 @@ ScoreTela PROC
 	ret
 ScoreTela ENDP
 
+CorTela PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
+CorTela ENDP
 
 	
 main PROC
@@ -878,8 +981,6 @@ fim:
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
-
 exit
 main ENDP
-END main
 END main
