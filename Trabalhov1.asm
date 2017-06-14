@@ -42,12 +42,20 @@ INCLUDE Irvine32.inc
 	mInstrucoes19 BYTE "MOMENTO, PRESSIONANDO 'Q'.",0
 	
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nos crédito
-	mcreditos1 BYTE "PARA GUIAR O ET NESSE JOGO BASTA:",0			
-	mcreditos2 BYTE "-PRESSIONAR A SETA PARA CIMA PARA PULAR;",0			
-	mcreditos3 BYTE "-PRESSIONAR AS SETAS PARA A DIREITA OU ESQUERDA",0
-	mcreditos4 BYTE "PARA SE MOVIMENTAR LATERALMENTE;",0			
-	mcreditos5 BYTE "-TAMBEM E POSSIVEL DAR SAIR DO JOGO A QUALQUER",0
-	mcreditos6 BYTE "MOMENTO, PRESSIONANDO 'Q'.",0
+	mcreditos1 BYTE "JOGO DESENVOLVIDO PARA A DISCIPLINA DE LABORATORIO DE",0
+	mcreditos2 BYTE "ARQUITETURA E ORGANIZACAO DE COMPUTADORES, MINISTRADA",0
+	mcreditos3 BYTE "MINISTRADA PELO DOCENTE LUCIANO NERIS, NA UNIVERSIDADE",0
+	mcreditos4 BYTE "FEDERAL DE SAO CARLOS - UFSCAR, COM ENTREGA NO",0	
+	mcreditos5 BYTE "PRIMEIRO SEMESTRE DE 2017.",0
+	
+	mcreditos6 BYTE "PROJETO LICENCIADO POR GLP-3.0 E DISPONIVEL NO GITHUB",0
+	mcreditos7 BYTE "EM: GITHUB.COM/MARCOSFAGLI/CLOCK-COLLORS",0
+	
+	mcreditos8 BYTE "DESENVOLVEDORES E MEMBROS DO GRUPO:",0			
+	mcreditos9 BYTE "BRUNA ZAMITH SANTOS",0			
+	mcreditos10 BYTE "RA 628093",0
+	mcreditos11 BYTE "MARCOS AUGUSTO FAGLIONI JUNIOR",0			
+	mcreditos12 BYTE "RA 628301",0
 	
 	
 	
@@ -621,7 +629,118 @@ LTI2:
 	
 	ret
 TelaInstrucoes ENDP
+
+TelaCreditos PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
+	call LimpaTela
+	call Bordas
+
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+
+	mov dl, 18
+	mov dh, 2
+	call GOTOXY
 	
+	mov edx, OFFSET nome
+	call WRITESTRING
+	
+	mov al, '/'
+	call WRITECHAR
+	
+	mov edx, OFFSET bcreditos
+	call WRITESTRING
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 5
+	mov dh, 4
+	call GOTOXY
+	mov edx, OFFSET mcreditos1
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 5
+	call GOTOXY
+	mov edx, OFFSET mcreditos2
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 6
+	call GOTOXY
+	mov edx, OFFSET mcreditos3
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 7
+	call GOTOXY
+	mov edx, OFFSET mcreditos4
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 8
+	call GOTOXY
+	mov edx, OFFSET mcreditos5
+	call WRITESTRING
+	
+	mov dl, 5
+	mov dh, 10
+	call GOTOXY
+	mov edx, OFFSET mcreditos6
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 11
+	call GOTOXY
+	mov edx, OFFSET mcreditos7
+	call WRITESTRING
+	
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 12
+	mov dh, 16
+	call GOTOXY
+	mov edx, OFFSET mcreditos8
+	call WRITESTRING
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 3
+	mov dh, 18
+	call GOTOXY
+	mov edx, OFFSET mcreditos9
+	call WRITESTRING
+	mov dl, 30
+	mov dh, 19
+	call GOTOXY
+	mov edx, OFFSET mcreditos10
+	call WRITESTRING
+	mov dl, 3
+	mov dh, 21
+	call GOTOXY
+	mov edx, OFFSET mcreditos11
+	call WRITESTRING
+	mov dl, 30
+	mov dh, 22
+	call GOTOXY
+	mov edx, OFFSET mcreditos12
+	call WRITESTRING
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+LTC2:
+    mov  eax, 50
+    call Delay
+    call ReadKey
+    jz   LTC2
+	
+	ret
+TelaCreditos ENDP
+
 TempoTela PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -730,15 +849,10 @@ jogo:
 	
 instrucoes:
 	call TelaInstrucoes
-	call READCHAR
 	jmp start
 	
 creditos:
-	call LimpaTela	
-	call Bordas
-	call Plataformas
-	;call TelaCreditos
-	call READCHAR
+	call TelaCreditos
 	jmp start
 
 fim:
