@@ -502,6 +502,7 @@ PrcSetaCima PROC
 	
 igual:
 	inc score
+	mov eax, 1
 	jmp fim
 	
 diferente:
@@ -527,12 +528,12 @@ TelaJogo PROC
 
 	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
-	mov dl, 9
+	mov dl, 6
 	mov dh, 1
 	call GOTOXY
 	mov edx, OFFSET tempo
 	call WRITESTRING
-	mov dl, 21
+	mov dl, 19
 	mov dh, 1
 	call GOTOXY
 	mov edx, OFFSET pontuacao
@@ -563,7 +564,6 @@ LTJ1:
 LTJ3:
 	call TrocaCorPlat
 LTJ2:
-	call ScoreTela
 	mov eax, 50
 	inc cont
 	cmp cont, 10
@@ -586,6 +586,11 @@ LTJ2:
 	
 setaCima:
 	call PrcSetaCima
+	cmp eax, 1
+	jne LTJ2					;Alterar para fimTelaJogo
+	call ScoreTela
+	call SorteiaCores
+	call CorSelPlat
 	jmp LTJ2
 	
 setaEsq:
@@ -965,7 +970,7 @@ TempoTela PROC
 ;
 ;
 ;Retorna:	
-	mov dl, 16
+	mov dl, 13
 	mov dh, 1
 	call GOTOXY
 	movzx eax, time
@@ -984,11 +989,16 @@ ScoreTela PROC
 ;
 ;
 ;Retorna:	
-	mov dl, 32
+	mov dl, 30
 	mov dh, 1
 	call GOTOXY
 	movzx eax, score
 	call WRITEDEC
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
 	ret
 ScoreTela ENDP
 
@@ -1112,6 +1122,7 @@ LS1:
 jogo:
 	call TelaJogo
 	mov time, 90
+	mov score, 0
 	jmp start
 	
 instrucoes:
