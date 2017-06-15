@@ -22,6 +22,7 @@ INCLUDE Irvine32.inc
 	posXB BYTE 30						;Armazena a posição X do personagem
 	posYB BYTE 24						;Armazena a posição Y do personagem
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
+	armadilhas BYTE 12 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
 	contTime BYTE 0							;Contador auxiliar para o tempo
@@ -1042,6 +1043,25 @@ CorSelPlat PROC
 	ret
 CorSelPlat ENDP
 
+
+CriaArmInicio PROC
+	int 3
+	mov ecx, LENGTHOF armadilhas
+L1:
+	mov eax, 10
+	call delay
+	call Randomize              ;Sets seed
+    movzx eax, tMaxX					;Keeps the range 0 - 8
+	sub eax, 4
+	
+    call RandomRange
+    mov  armadilhas[ecx], al            ;First random number
+	loop L1
+	
+	ret
+CriaArmInicio ENDP
+
+
 TrocaCorPlat PROC
 	call Randomize              ;Sets seed
     mov  eax, 9					;Keeps the range 0 - 8
@@ -1120,6 +1140,7 @@ LS1:
 	je creditos
 	
 jogo:
+	call CriaArmInicio
 	call TelaJogo
 	mov time, 90
 	mov score, 0
