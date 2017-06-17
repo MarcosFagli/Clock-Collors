@@ -18,6 +18,7 @@ INCLUDE Irvine32.inc
 	time BYTE 90						;Armazena o tempo do jogo
 	score BYTE 0						;Armazena a pontuação do jogo
 	posSeta BYTE 0						;Armazena a posição da seta no menu 
+	posSeta1 BYTE 0						;Armazena a posição da seta no menu 
 	tMaxX BYTE 60						;Armazena a quantidade de colunas do ecrã do jogo
 	tMaxY BYTE 26						;Armazena a quantidade de linhas do ecrã do jogo
 	posXB BYTE 30						;Armazena a posição X do personagem
@@ -1014,6 +1015,76 @@ LTI1:
 	ret
 TelaCreditos ENDP
 
+SetaTelaPerdeu PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
+	push dx
+
+	mov dl, 15
+	mov dh, 18
+	call GOTOXY
+	mov eax, black+(black*16)
+	call SETTEXTCOLOR
+	mov al, ' '
+	call WRITECHAR
+	call WRITECHAR
+	
+	mov dl, 15
+	mov dh, 21
+	call GOTOXY
+	mov eax, black+(black*16)
+	call SETTEXTCOLOR
+	mov al, ' '
+	call WRITECHAR
+	call WRITECHAR
+	
+	pop dx
+	
+	cmp dx, 0026h
+	jne LPS1
+	cmp posSeta1, 0000h
+	jbe LPS2
+	dec posSeta1
+LPS1:	
+	cmp dx, 0028h
+	jne LPS2
+	cmp posSeta1, 0001h
+	jae LPS2
+	inc posSeta1
+LPS2:
+	
+	cmp posSeta1, 0
+	je seta1
+	mov dh, 21
+	jmp setasai
+seta1:	
+	mov dh, 18
+setasai:
+	
+	mov dl, 15
+	call GOTOXY
+	
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+	
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	ret
+SetaTelaPerdeu ENDP
+
 TelaPerdeu PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -1032,6 +1103,15 @@ TelaPerdeu PROC
 
 	mov edx, OFFSET mPerdeu1
 	call WRITESTRING
+	
+	mov dl, 15
+	mov dh, 18
+	call GOTOXY
+
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
 	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
@@ -1106,6 +1186,15 @@ TelaAcabaTempo PROC
 
 	mov edx, OFFSET mPerdeuTempo1
 	call WRITESTRING
+	
+	mov dl, 15
+	mov dh, 18
+	call GOTOXY
+	
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
 	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
@@ -1366,6 +1455,9 @@ start:
 	call Plataformas
 	call TelaInicio
 	mov posSeta, 0
+	mov posSeta1, 0
+	mov time, 90
+	mov score, 0
 	
 	mov dl, 20							
 	mov dh, BYTE PTR [platInicial]
@@ -1387,7 +1479,7 @@ AguardaTecla1:
     mov  eax,50          					;Tempo para o SO esperar
     call Delay           					;(otherwise, some key presses are lost)
     call ReadKey         					;Busca por entradas no teclado
-    jz   AguardaTecla1      					;Nenhuma tecla pressionada ainda
+    jz   AguardaTecla1      				;Nenhuma tecla pressionada ainda
 	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
 	je LS1
 	cmp dx, 0051h
@@ -1411,8 +1503,6 @@ jogo:
 	je start
 	cmp eax, 2
 	je fim2
-	mov time, 90
-	mov score, 0
 	jmp start
 	
 instrucoes:
@@ -1427,19 +1517,35 @@ creditos:
 fim1:
 	call TelaPerdeu
 AguardaTecla2:
-	mov eax, 50
-	call Delay
-	call ReadKey
-	jz AguardaTecla2
-	
+    mov  eax,50
+    call Delay 
+    call ReadKey
+    jz   AguardaTecla2
+	cmp  dx,000Dh
+	je saiAguardaTecla2
+	call SetaTelaPerdeu
+    jne  AguardaTecla2
+saiAguardaTecla2:
+	cmp posSeta1, 0
+	je start
+	jmp fim
+
 	
 fim2:
 	call TelaAcabaTempo
 AguardaTecla3:
-	mov eax, 50
-	call Delay
-	call ReadKey
-	jz AguardaTecla3
+    mov  eax,50
+    call Delay 
+    call ReadKey
+    jz   AguardaTecla3
+	cmp  dx,000Dh
+	je saiAguardaTecla3
+	call SetaTelaPerdeu
+    jne  AguardaTecla3
+saiAguardaTecla3:
+	cmp posSeta1, 0
+	je start
+	jmp fim
 	
 fim:
 	movzx eax, tMaxY
