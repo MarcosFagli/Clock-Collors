@@ -14,6 +14,7 @@ INCLUDE Irvine32.inc
 	bcreditos BYTE "CREDITOS",0			;Nome do botão para os creditos
 	bcomoJogar BYTE "COMO JOGAR",0		;Nome do botão para as instruções
 	nome BYTE "CLOCK COLORS", 0			;Nome do Jogo
+	timeMax BYTE 90						;Armazena o tempo maximo de jogo
 	time BYTE 90						;Armazena o tempo do jogo
 	score BYTE 0						;Armazena a pontuação do jogo
 	posSeta BYTE 0						;Armazena a posição da seta no menu 
@@ -25,7 +26,7 @@ INCLUDE Irvine32.inc
 	armadilhas BYTE 12 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
-	contTime BYTE 0							;Contador auxiliar para o tempo
+	contTime BYTE 0						;Contador auxiliar para o tempo
 	coresDisp WORD yellow, blue, green, 
 					cyan, red, magenta, 
 					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
@@ -72,6 +73,18 @@ INCLUDE Irvine32.inc
 	mcreditos10 BYTE "RA 628093",0
 	mcreditos11 BYTE "MARCOS AUGUSTO FAGLIONI JUNIOR",0			
 	mcreditos12 BYTE "RA 628301",0
+	
+	;Dados para a tela de derrota
+	mPerdeu1 BYTE "VOCE PERDEU!",0
+	mPerdeu21 BYTE "VOCE FOI DESCUIDADO E O ETEVALDO SOFREU",0
+	mPerdeu22 BYTE "COM AS CONSEQUENCIAS",0
+	mPerdeu3 BYTE "SUA PONTUACAO: ",0
+	mPerdeu4 BYTE "SEU TEMPO: ",0
+	mPerdeu5 BYTE "JOGAR NOVAMENTE",0
+	mPerdeu6 BYTE "SAIR",0
+
+	;Dados para a tela de fim de jogo por tempo
+	mPerdeuTempo1 BYTE "SEU TEMPO ACABOU!",0
 	
 .code
 LimpaTela PROC
@@ -339,7 +352,8 @@ Plataformas PROC
 	mov eax, green							;IRVINE green - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR
 	mov ecx, 4
-	mov ebx, 6
+	mov bx, platInicial
+	sub bx, 2
 LP1:
 	mov dl, 1
 	mov dh, bl
@@ -503,6 +517,34 @@ PrcSetaCima PROC
 	
 igual:
 	inc score
+	call ApagaArm
+	mov edx, 3
+	mov ebx, 0
+	mov ecx, 10
+shiftByte:
+	mov dl, armadilhas[edx]
+	mov armadilhas[ebx], dl 
+	inc edx
+	inc ebx
+	loop shiftByte
+	
+	
+	mov ecx, 3
+	mov edx, 9
+L1:
+	call Randomize             			;Sets seed
+    movzx eax, tMaxX					;Keeps the range 0 - 8
+	sub eax, 4
+	
+    call RandomRange
+    mov  armadilhas[edx], al            ;First random number
+	inc edx
+	mov eax, 10
+	call Delay
+	loop L1
+	
+	call DesenhaArm
+	
 	mov eax, 1
 	jmp fim
 	
@@ -526,6 +568,7 @@ TelaJogo PROC
 	call Plataformas
 	call TempoTela
 	call ScoreTela
+	call CriaArmInicio
 
 	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
@@ -570,7 +613,7 @@ LTJ2:
 	cmp cont, 10
 	ja LTJ1
 	cmp time, 0
-	jbe fimTelaJogo
+	jbe fimTempo
     call Delay
     call ReadKey
     jz LTJ2
@@ -587,8 +630,8 @@ LTJ2:
 	
 setaCima:
 	call PrcSetaCima
-	cmp eax, 1
-	jne LTJ2					;Alterar para fimTelaJogo
+	cmp eax, 0
+	je fimPerdeuObs					;Alterar para fimTelaJogo
 	call ScoreTela
 	call SorteiaCores
 	call CorSelPlat
@@ -602,13 +645,19 @@ setaDir:
 	call ProcSetaDir
 	jmp LTJ2
 	
-	
-	
+fimPerdeuObs:
+	mov eax, 0
+	ret
 	
 fimTelaJogo:	
+	mov eax, 1
+	ret
+	
+fimTempo:
+	mov eax, 2
 	ret
 TelaJogo ENDP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 TelaInstrucoes PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -965,6 +1014,140 @@ LTI1:
 	ret
 TelaCreditos ENDP
 
+TelaPerdeu PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
+	call LimpaTela
+	call Bordas
+	
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 23
+	mov dh, 3
+	call GOTOXY
+
+	mov edx, OFFSET mPerdeu1
+	call WRITESTRING
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 10
+	mov dh, 7
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu21
+	call WRITESTRING
+	
+	mov dl, 19
+	mov dh, 8
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu22
+	call WRITESTRING
+	
+	mov dl, 22
+	mov dh, 11
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu3
+	call WRITESTRING
+	
+	movzx eax, score
+	call WRITEDEC
+	
+	mov dl, 24
+	mov dh, 13
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu4
+	call WRITESTRING
+	
+	movzx eax, timemax
+	sub al, time
+	call WRITEDEC	
+	
+	mov dl, 22
+	mov dh, 18
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu5
+	call WRITESTRING
+	
+	mov dl, 27
+	mov dh, 21
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu6
+	call WRITESTRING
+	
+	ret
+TelaPerdeu ENDP
+
+TelaAcabaTempo PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
+	call LimpaTela
+	call Bordas
+	
+	mov eax, green+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 21
+	mov dh, 6
+	call GOTOXY
+
+	mov edx, OFFSET mPerdeuTempo1
+	call WRITESTRING
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	
+	mov dl, 22
+	mov dh, 11
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu3
+	call WRITESTRING
+	
+	movzx eax, score
+	call WRITEDEC
+	
+	mov dl, 24
+	mov dh, 13
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu4
+	call WRITESTRING
+	
+	movzx eax, timemax
+	call WRITEDEC	
+	
+	mov dl, 22
+	mov dh, 18
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu5
+	call WRITESTRING
+	
+	mov dl, 27
+	mov dh, 21
+	call GOTOXY
+	
+	mov edx, OFFSET mPerdeu6
+	call WRITESTRING
+	
+	ret
+TelaAcabaTempo ENDP
+
 TempoTela PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -1042,21 +1225,97 @@ CorSelPlat PROC
 
 	ret
 CorSelPlat ENDP
+	
+ApagaArm PROC
+	mov eax, black+(black*16)							;IRVINE green - Seleção de cores pré definidas no IRVINE
+	call SETTEXTCOLOR
 
+	mov ecx, 4
+	mov bx, 21
+	sub bx, 2
+	mov esi, 0
+	
+LP1:
+	mov dh, bl
+	push ecx
+	
+	mov ecx, 3
+	
+LP2:
+	mov dl,armadilhas[esi]
+	call GOTOXY
+	inc esi
+	mov al, ' '
+	call WRITECHAR
+	loop LP2
+
+	pop ecx
+	sub bl, distPlat
+	loop LP1
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+	ret
+ApagaArm ENDP	
+	
+DesenhaArm PROC
+	mov eax, white+(black*16)							;IRVINE green - Seleção de cores pré definidas no IRVINE
+	call SETTEXTCOLOR
+
+	mov ecx, 4
+	mov bx, 21
+	sub bx, 2
+	mov esi, 0
+	
+LP1:
+	mov dh, bl
+	push ecx
+	
+	mov ecx, 3
+	
+LP2:
+	mov dl,armadilhas[esi]
+	call GOTOXY
+	inc esi
+	mov al, '&'
+	call WRITECHAR
+	loop LP2
+
+	pop ecx
+	sub bl, distPlat
+	loop LP1
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+	ret
+DesenhaArm ENDP
 
 CriaArmInicio PROC
-	int 3
 	mov ecx, LENGTHOF armadilhas
+	mov ebx, 0
 L1:
-	mov eax, 10
-	call delay
-	call Randomize              ;Sets seed
+	call Randomize             			;Sets seed
     movzx eax, tMaxX					;Keeps the range 0 - 8
 	sub eax, 4
 	
     call RandomRange
-    mov  armadilhas[ecx], al            ;First random number
+    mov  armadilhas[ebx], al            ;First random number
+	inc ebx
+	mov eax, 10
+	call Delay
 	loop L1
+	
+	call DesenhaArm
 	
 	ret
 CriaArmInicio ENDP
@@ -1091,6 +1350,11 @@ LTCP1:
 	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
 	ret
 TrocaCorPlat ENDP
 	
@@ -1121,7 +1385,7 @@ start:
 	
 AguardaTecla1:
     mov  eax,50          					;Tempo para o SO esperar
-    call Delay           					; (otherwise, some key presses are lost)
+    call Delay           					;(otherwise, some key presses are lost)
     call ReadKey         					;Busca por entradas no teclado
     jz   AguardaTecla1      					;Nenhuma tecla pressionada ainda
 	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
@@ -1140,8 +1404,13 @@ LS1:
 	je creditos
 	
 jogo:
-	call CriaArmInicio
 	call TelaJogo
+	cmp eax, 0
+	je fim1
+	cmp eax, 1
+	je start
+	cmp eax, 2
+	je fim2
 	mov time, 90
 	mov score, 0
 	jmp start
@@ -1154,6 +1423,24 @@ creditos:
 	call TelaCreditos
 	jmp start
 
+	
+fim1:
+	call TelaPerdeu
+AguardaTecla2:
+	mov eax, 50
+	call Delay
+	call ReadKey
+	jz AguardaTecla2
+	
+	
+fim2:
+	call TelaAcabaTempo
+AguardaTecla3:
+	mov eax, 50
+	call Delay
+	call ReadKey
+	jz AguardaTecla3
+	
 fim:
 	movzx eax, tMaxY
 	inc eax
@@ -1163,6 +1450,6 @@ fim:
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
-exit
+	exit
 main ENDP
 END main
