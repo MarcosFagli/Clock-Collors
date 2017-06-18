@@ -523,8 +523,8 @@ igual:
 	mov ebx, 0
 	mov ecx, 10
 shiftByte:
-	mov dl, armadilhas[edx]
-	mov armadilhas[ebx], dl 
+	mov al, armadilhas[edx]
+	mov armadilhas[ebx], al 
 	inc edx
 	inc ebx
 	loop shiftByte
@@ -1165,6 +1165,10 @@ TelaPerdeu PROC
 	mov edx, OFFSET mPerdeu6
 	call WRITESTRING
 	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
 	ret
 TelaPerdeu ENDP
 
@@ -1233,6 +1237,10 @@ TelaAcabaTempo PROC
 	
 	mov edx, OFFSET mPerdeu6
 	call WRITESTRING
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
 	
 	ret
 TelaAcabaTempo ENDP
