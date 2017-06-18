@@ -516,12 +516,28 @@ PrcSetaCima PROC
 	cmp ax, (corSele+2)
 	jne diferente
 	
+	mov ecx, 3
+	mov esi, 0
 igual:
+	mov al, armadilhas[esi]
+	cmp al, posXB 
+	je diferente
+	inc al
+	cmp al, posXB 
+	je diferente
+	sub al, 2
+	cmp al, posXB 
+	je diferente
+	inc esi
+	loop igual
+	
+	
 	inc score
 	call ApagaArm
 	mov edx, 3
 	mov ebx, 0
 	mov ecx, 10
+	
 shiftByte:
 	mov al, armadilhas[edx]
 	mov armadilhas[ebx], al 
