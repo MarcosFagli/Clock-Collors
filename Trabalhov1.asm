@@ -24,15 +24,16 @@ INCLUDE Irvine32.inc
 	posXB BYTE 30						;Armazena a posição X do personagem
 	posYB BYTE 24						;Armazena a posição Y do personagem
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
-	armadilhas BYTE 12 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
+	armadilhas BYTE 60 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
 	contTime BYTE 0						;Contador auxiliar para o tempo
 	coresDisp WORD yellow, blue, green, 
 					cyan, red, magenta, 
-					lightBlue, lightRed ;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
+					white, lightRed 	;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
 	corSele WORD 2 DUP(?)				;Vetor de cores sorteadas para as plataformas
 	corPlatAtual WORD 1 DUP(?)			;Armazena a cor atual da plataforma imediatamente acima do personagem
+	nArmadilhas BYTE 15					;Numero de armadilhas por plataforma
 	
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nas instrucões
 	mInstrucoes1 BYTE "ESTE JOGO CONSISTE EM GUIAR O ETEVALDO ATE A",0
@@ -503,12 +504,37 @@ fimProcEsq:
 	ret	
 ProcSetaEsq ENDP
 
+Colisao PROC
+	movzx ecx, nArmadilhas
+	mov edi, 0
+	
+L1:
+	mov dl, armadilhas[edi]
+	cmp dl, posXB
+	je colidiu
+	inc edi
+	loop L1
+	
+	mov eax, 1
+	jmp quit
+	
+colidiu:
+	mov eax, 0
+	
+quit:
+	ret
+Colisao ENDP
+
 PrcSetaCima PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
 ;
 ;
 ;Retorna:
+	call Colisao
+	cmp eax, 0
+	je diferente
+
 	mov ax, corPlatAtual
 	cmp ax, corSele
 	je igual
@@ -516,15 +542,20 @@ PrcSetaCima PROC
 	cmp ax, (corSele+2)
 	jne diferente
 	
-	mov ecx, 3
+	movzx ecx, nArmadilhas
 	mov ebx, OFFSET armadilhas
 	
 igual:
+
 	inc score
 	call ApagaArm
-	mov edx, 3
 	mov ebx, 0
-	mov ecx, 10
+	movzx eax, nArmadilhas
+	mov edx, 3
+	mul edx
+	inc eax
+	movzx edx, nArmadilhas
+	mov ecx, eax
 	
 shiftByte:
 	mov al, armadilhas[edx]
@@ -534,14 +565,16 @@ shiftByte:
 	loop shiftByte
 	
 	
-	mov ecx, 3
-	mov edx, 9
+	movzx ecx, nArmadilhas
+	mov edx, LENGTHOF armadilhas
+	sub edx, ecx
 L1:
 	call Randomize             			;Sets seed
     movzx eax, tMaxX					;Keeps the range 0 - 8
 	sub eax, 4
 	
     call RandomRange
+	inc al								;Incrementar para a armadilha não aparecer na lateral do jogo 
     mov  armadilhas[edx], al            ;First random number
 	inc edx
 	mov eax, 10
@@ -608,6 +641,7 @@ LTJ1:
 	inc contTime
 	cmp contTime, 2
 	jnae LTJ3
+	call ScoreTela
 	call TempoTela
 	mov contTime, 0
 LTJ3:
@@ -637,8 +671,6 @@ setaCima:
 	call PrcSetaCima
 	cmp eax, 0
 	je fimPerdeuObs					;Alterar para fimTelaJogo
-	call ScoreTela
-	call SorteiaCores
 	call CorSelPlat
 	jmp LTJ2
 	
@@ -1340,7 +1372,7 @@ LP1:
 	mov dh, bl
 	push ecx
 	
-	mov ecx, 3
+	movzx ecx, nArmadilhas
 	
 LP2:
 	mov dl,armadilhas[esi]
@@ -1377,7 +1409,7 @@ LP1:
 	mov dh, bl
 	push ecx
 	
-	mov ecx, 3
+	movzx ecx, nArmadilhas
 	
 LP2:
 	mov dl,armadilhas[esi]
@@ -1410,6 +1442,7 @@ L1:
 	sub eax, 4
 	
     call RandomRange
+	inc al
     mov  armadilhas[ebx], al            ;First random number
 	inc ebx
 	mov eax, 10
