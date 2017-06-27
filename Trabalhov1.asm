@@ -24,7 +24,8 @@ INCLUDE Irvine32.inc
 	posXB BYTE 30						;Armazena a posição X do personagem
 	posYB BYTE 24						;Armazena a posição Y do personagem
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
-	armadilhas BYTE 60 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
+	nArmadilhas BYTE 10					;Numero de armadilhas por plataforma
+	armadilhas BYTE 40 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
 	contTime BYTE 0						;Contador auxiliar para o tempo
@@ -33,7 +34,6 @@ INCLUDE Irvine32.inc
 					white, lightRed 	;Vetor de Cores Disponíveis para as plataformas (cores pre definidas pela biblioteca Irvine)
 	corSele WORD 2 DUP(?)				;Vetor de cores sorteadas para as plataformas
 	corPlatAtual WORD 1 DUP(?)			;Armazena a cor atual da plataforma imediatamente acima do personagem
-	nArmadilhas BYTE 15					;Numero de armadilhas por plataforma
 	
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nas instrucões
 	mInstrucoes1 BYTE "ESTE JOGO CONSISTE EM GUIAR O ETEVALDO ATE A",0
@@ -525,6 +525,35 @@ quit:
 	ret
 Colisao ENDP
 
+VerificaPos PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
+	push eax
+	push edx
+	push ecx
+	
+	movzx ecx, nArmadilhas
+	mov edi, OFFSET armadilhas
+	mov ebx, LENGTHOF armadilhas
+	sub ebx, ecx
+	add edi, ebx
+	mov ebx, 1
+	cld
+	repne scasb
+	jnz fim
+	mov ebx, 0
+	
+fim:
+	pop ecx
+	pop edx
+	pop eax
+
+	ret
+VerificaPos ENDP
+
 PrcSetaCima PROC
 ;Imprime uma seta na posição desejada
 ;Recebe:	
@@ -564,7 +593,6 @@ shiftByte:
 	inc ebx
 	loop shiftByte
 	
-	
 	movzx ecx, nArmadilhas
 	mov edx, LENGTHOF armadilhas
 	sub edx, ecx
@@ -575,10 +603,11 @@ L1:
 	
     call RandomRange
 	inc al								;Incrementar para a armadilha não aparecer na lateral do jogo 
+	call VerificaPos
+	cmp ebx, 1
+	jne L1
     mov  armadilhas[edx], al            ;First random number
 	inc edx
-	mov eax, 10
-	call Delay
 	loop L1
 	
 	call DesenhaArm
@@ -1433,9 +1462,41 @@ LP2:
 	ret
 DesenhaArm ENDP
 
-CriaArmInicio PROC
-	mov ecx, LENGTHOF armadilhas
+VerificaPosIni PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:
+	push eax
+	push ecx
+	push edi
+	
+	movzx ecx, nArmadilhas
+	mov ebx, 1
+	cld
+	repne scasb
+	jnz fim
 	mov ebx, 0
+	
+fim:
+	pop edi
+	pop ecx
+	pop eax
+
+	ret
+VerificaPosIni ENDP
+
+CriaArmInicio PROC
+	mov ecx, 4							;numero de plataformas
+	mov ebx, 1
+	mov edx, 0
+	mov edi, OFFSET armadilhas
+	
+L2:
+	push ebx
+	push ecx
+	movzx ecx, nArmadilhas
 L1:
 	call Randomize             			;Sets seed
     movzx eax, tMaxX					;Keeps the range 0 - 8
@@ -1443,14 +1504,27 @@ L1:
 	
     call RandomRange
 	inc al
-    mov  armadilhas[ebx], al            ;First random number
-	inc ebx
-	mov eax, 10
-	call Delay
+	call VerificaPosIni
+	cmp ebx, 1
+	jne L1
+    mov  armadilhas[edx], al            ;First random number
+	inc edx
 	loop L1
 	
-	call DesenhaArm
+	pop ecx
+	pop ebx
+	movzx eax, nArmadilhas
+	push edx
+	mul ebx
+	pop edx
+	mov edi, OFFSET armadilhas
+	add edi, eax
+	inc edi
+	inc ebx
+	loop L2
 	
+	call DesenhaArm
+
 	ret
 CriaArmInicio ENDP
 
