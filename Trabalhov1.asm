@@ -614,6 +614,9 @@ L1:
 	inc edx
 	loop L1
 	
+	mov  al, 07h 
+    call WriteChar
+	
 	call DesenhaArm
 	
 	mov eax, 1
