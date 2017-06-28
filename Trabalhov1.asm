@@ -14,6 +14,9 @@ INCLUDE Irvine32.inc
 	bcreditos BYTE "CREDITOS",0			;Nome do botão para os creditos
 	bcomoJogar BYTE "COMO JOGAR",0		;Nome do botão para as instruções
 	nome BYTE "CLOCK COLORS", 0			;Nome do Jogo
+	bDificuldade1 BYTE "FACIL", 0		;Nome do botão para a dificuldade 1
+	bDificuldade2 BYTE "MEDIO", 0		;Nome do botão para a dificuldade 2
+	bDificuldade3 BYTE "DIFICIL", 0		;Nome do botão para a dificuldade 3
 	timeMax BYTE 90						;Armazena o tempo maximo de jogo
 	time BYTE 90						;Armazena o tempo do jogo
 	score BYTE 0						;Armazena a pontuação do jogo
@@ -24,8 +27,9 @@ INCLUDE Irvine32.inc
 	posXB BYTE 30						;Armazena a posição X do personagem
 	posYB BYTE 24						;Armazena a posição Y do personagem
 	distPlat BYTE 5						;Armazena a distancia entre as plataformas
-	nArmadilhas BYTE 10					;Numero de armadilhas por plataforma
-	armadilhas BYTE 40 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
+	nArmadilhas BYTE 15					;Numero de armadilhas por plataforma
+	quantArmadilhas BYTE 60				;Numero de elementos do vetor armadilhas
+	armadilhas BYTE 60 DUP(?)			;Armazena as coordenadas x das armadilhas (são 3 armadilhas por plataforma)
 	platInicial WORD 8					;Armazena qual é a altura Y da plataforma mais alta
 	cont BYTE 0							;Contador auxiliar para trocar as cores da plataforma
 	contTime BYTE 0						;Contador auxiliar para o tempo
@@ -38,7 +42,7 @@ INCLUDE Irvine32.inc
 	;Os dados seguintes salvos na memória tem por objetivo armazenar o texto a ser exibido nas instrucões
 	mInstrucoes1 BYTE "ESTE JOGO CONSISTE EM GUIAR O ETEVALDO ATE A",0
 	mInstrucoes2 BYTE "PLATAFORMA MAIS ALTA QUE O JOGADOR CONSEGUIR CHEGAR",0
-	mInstrucoes3 BYTE "EM 90 SEGUNDOS.",0
+	mInstrucoes3 BYTE "EM 30, 60 ou 90 SEGUNDOS.",0
 	
 	mInstrucoes4 BYTE "NESSA AVENTURA, O ETEVALDO SO PODE PULAR SE A",0 
 	mInstrucoes5 BYTE "PLATAFORMA IMEDIATAMENTE ACIMA DELE ESTIVER COM",0 
@@ -537,7 +541,7 @@ VerificaPos PROC
 	
 	movzx ecx, nArmadilhas
 	mov edi, OFFSET armadilhas
-	mov ebx, LENGTHOF armadilhas
+	movzx ebx, quantArmadilhas
 	sub ebx, ecx
 	add edi, ebx
 	mov ebx, 1
@@ -594,7 +598,7 @@ shiftByte:
 	loop shiftByte
 	
 	movzx ecx, nArmadilhas
-	mov edx, LENGTHOF armadilhas
+	movzx edx, quantArmadilhas
 	sub edx, ecx
 L1:
 	call Randomize             			;Sets seed
@@ -723,6 +727,54 @@ fimTempo:
 	mov eax, 2
 	ret
 TelaJogo ENDP
+
+TelaDificuldade PROC
+;Imprime uma seta na posição desejada
+;Recebe:	
+;
+;
+;Retorna:	
+	call LimpaTela
+	call Bordas
+	call Plataformas
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+
+	mov dl, 24								;Trecho para imprimir o nome do  jogo na tela de dificuldades
+	mov dh, 3
+	call GOTOXY
+	mov edx, OFFSET nome
+	call WRITESTRING
+	
+	movzx eax, platInicial
+	mov dl, 27
+	mov dh, al 
+	call GOTOXY
+	mov edx, OFFSET bDificuldade1
+	call WRITESTRING
+	
+	add al, distPlat
+	mov dl, 27
+	mov dh, al
+	call GOTOXY
+	mov edx, OFFSET bDificuldade2
+	call WRITESTRING
+	
+	add al, distPlat
+	mov dl, 26
+	mov dh, al
+	call GOTOXY
+	mov edx, OFFSET bDificuldade3
+	call WRITESTRING
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+	ret
+TelaDificuldade ENDP
+
 
 TelaInstrucoes PROC
 ;Imprime uma seta na posição desejada
@@ -1575,7 +1627,6 @@ start:
 	call TelaInicio
 	mov posSeta, 0
 	mov posSeta1, 0
-	mov time, 90
 	mov score, 0
 	
 	mov dl, 20							
@@ -1615,6 +1666,60 @@ LS1:
 	je creditos
 	
 jogo:
+	call TelaDificuldade
+
+	mov dl, 20							
+	mov dh, BYTE PTR [platInicial]
+	call GOTOXY
+	
+	mov eax, white+(black*16)
+	call SETTEXTCOLOR
+
+	mov al, '-'
+	call WRITECHAR
+	mov al, '>'
+	call WRITECHAR
+	
+	mov dl, 0
+	mov dh, tMaxY
+	call GOTOXY
+	
+AguardaTecla2:
+    mov  eax,50          					;Tempo para o SO esperar
+    call Delay           					;(otherwise, some key presses are lost)
+    call ReadKey         					;Busca por entradas no teclado
+    jz   AguardaTecla2      				;Nenhuma tecla pressionada ainda
+	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
+	je LS2
+	cmp dx, 0051h
+	je fim
+	call PrintSeta
+    jne  AguardaTecla2    					;Se a tecla não for enter, volta para o label AguardaTecla1
+	
+LS2:
+	cmp posSeta, 0000h
+	je facil
+	cmp posSeta, 0001h
+	je medio
+	cmp posSeta, 0002h
+	je dificil
+	
+facil:
+	mov nArmadilhas, 3	
+	mov quantArmadilhas, 12
+	mov time, 90
+	jmp play
+medio:
+	mov nArmadilhas, 7
+	mov quantArmadilhas, 28
+	mov time, 60
+	jmp play
+dificil:
+	mov nArmadilhas, 15	
+	mov quantArmadilhas, 60
+	mov time, 30
+	
+play:
 	call TelaJogo
 	cmp eax, 0
 	je fim1
@@ -1635,23 +1740,6 @@ creditos:
 	
 fim1:
 	call TelaPerdeu
-AguardaTecla2:
-    mov  eax,50
-    call Delay 
-    call ReadKey
-    jz   AguardaTecla2
-	cmp  dx,000Dh
-	je saiAguardaTecla2
-	call SetaTelaPerdeu
-    jne  AguardaTecla2
-saiAguardaTecla2:
-	cmp posSeta1, 0
-	je start
-	jmp fim
-
-	
-fim2:
-	call TelaAcabaTempo
 AguardaTecla3:
     mov  eax,50
     call Delay 
@@ -1662,6 +1750,22 @@ AguardaTecla3:
 	call SetaTelaPerdeu
     jne  AguardaTecla3
 saiAguardaTecla3:
+	cmp posSeta1, 0
+	je start
+	jmp fim
+
+fim2:
+	call TelaAcabaTempo
+AguardaTecla4:
+    mov  eax,50
+    call Delay 
+    call ReadKey
+    jz   AguardaTecla4
+	cmp  dx,000Dh
+	je saiAguardaTecla4
+	call SetaTelaPerdeu
+    jne  AguardaTecla4
+saiAguardaTecla4:
 	cmp posSeta1, 0
 	je start
 	jmp fim
