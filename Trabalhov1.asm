@@ -100,11 +100,11 @@ LimpaTela PROC
 	mov eax, black+(black*16)							;Para a função SETTEXTCOLOR deve ser passado al, onde os 4 bits HSB é a cor de fundo e os 4 LSB são a cor da letra, a multiplicação por 16 é equivalente a dar um shift de 4 bits para a esquerda
 	call SETTEXTCOLOR									;Função Irvine: Configura a cor do texto recebendo como parâmetro o registrador eax
 	
-	mov dl, 0
+	mov dl, 0											;Move o cursor para a posição 0,0
 	mov dh, 0
 	call GOTOXY											;Função Irvine: Configura o cursor para a linha dh e a coluna dl
 	
-	movzx ecx, tMaxY
+	movzx ecx, tMaxY									;Inicializa o contador do loop com a quantidade de colunas
 	
 LLP1:					
 	mov dl, 0
@@ -112,10 +112,10 @@ LLP1:
 	call GOTOXY
 	
 	push ecx
-	movzx ecx, tMaxX
+	movzx ecx, tMaxX									;Inicializa o contador do loop com a quantidade de linhas
 LLP2:
 	mov al, ' '
-	call WRITECHAR										;Função Irvine: Escreve um caracter no terminal
+	call WRITECHAR										;Função Irvine: Escreve um caracter no terminal, tMaxX * tMaxY vezes (declarado de forma a ser dois loops aninhados)
 	loop LLP2
 	
 	pop ecx
@@ -132,7 +132,7 @@ LLP2:
 LimpaTela ENDP
 
 ImpPerso PROC
-;Imprime um personagem na tela como sendo o seguinte:
+;Objetivo: Imprime um personagem na tela como sendo o seguinte:
 ;     @
 ;    /#\
 ;    / \
@@ -142,38 +142,38 @@ ImpPerso PROC
 	mov eax, lightGreen+(black*16)
 	call SETTEXTCOLOR
 	
-	mov dh, bh
+	mov dh, bh										;Posiciona o cursor sobre a cabeça do etevaldo
 	mov dl, bl
 	sub dh, 1
 	call GOTOXY
 	
-	mov al, '@'
+	mov al, '@'										;Desenha a cabeça do etevaldo
 	call WRITECHAR
 	
-	mov dl, bl
+	mov dl, bl										;Posiciona o cursor sobre o braço direito do etevaldo
 	dec dl
 	mov dh, bh
 	call GOTOXY
 	
 	mov al, '/'
-	call WRITECHAR
+	call WRITECHAR									;Desenha o braço direito
 	mov al, '#'
-	call WRITECHAR
+	call WRITECHAR									;Desenha o corpo
 	mov al, '\'
-	call WRITECHAR
+	call WRITECHAR									;Desenha o braço esquerdo
 	
-	mov dl, bl
+	mov dl, bl										;Posiciona o cursor sobre a perna direita do etevaldo
 	dec dl
 	mov dh, bh
 	inc dh
 	call GOTOXY
 	
 	mov al, '/'
-	call WRITECHAR
+	call WRITECHAR									;Desenha a perna direita
 	mov al, ' '
-	call WRITECHAR
+	call WRITECHAR									;Desenha um espaço somente para deslocar o cursor de uma forma mais rápida que GOTOXY
 	mov al, '\'
-	call WRITECHAR
+	call WRITECHAR									;Desenha a perna esquerda
 	
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
@@ -187,7 +187,7 @@ ImpPerso ENDP
 
 
 delPerso PROC
-;Apaga o personagem sobrescrevendo-o pelo caracter " "(espaços)
+;Objetivo: Apaga o personagem sobrescrevendo-o pelo caracter " "(espaços)
 ;Recebe: O valor de entrada deve ser passado atravez de parâmetros armazenados na memória. Atenção, a posição X e Y passadas representa o caracter "#" exatamente no centro do boneco. Este é o parâmetro de referência para esta função
 ;			posXB
 ;			posYB
@@ -195,32 +195,32 @@ delPerso PROC
 	mov eax, black+(black*16)
 	call SETTEXTCOLOR
 	
-	mov dl, posXB
+	mov dl, posXB										;Posiciona o cursor sobre a cabeça do etevaldo
 	mov dh, posYB
 	dec dh
 	call GOTOXY
 	
-	mov al, ' '
+	mov al, ' '											;Apaga a cabeça do etevaldo
 	call WRITECHAR
 	
-	mov dl, posXB
+	mov dl, posXB										;Posiciona o cursor sobre o braço direito do etevaldo
 	dec dl
 	mov dh, posYB
 	call GOTOXY
 	
-	mov ecx, 3
+	mov ecx, 3											;Configura o loop para ser executado 3 vezes, apagando assim os dois braços e o corpo
 LDP1:
 	mov al, ' '
 	call WRITECHAR
 	loop LDP1
 	
-	mov dh, posYB
+	mov dh, posYB										;Posiciona o cursor sobre a perna direita do etevaldo
 	mov dl, posXB
 	inc dh
 	dec dl
 	call GOTOXY
 	
-	mov ecx, 3
+	mov ecx, 3											;Configura um segundo loop para ser executado 3 vezes possibilitando apagar a duas perna
 LDP2:
 	mov al, ' '
 	call WRITECHAR
@@ -238,49 +238,49 @@ delPerso ENDP
 
 
 PrintSeta PROC
-;Apaga a seta da posiçãoImprime uma seta uma linha abaixo da plataforma, na coluna 20
+;Objetivo: Apaga a seta da posição atual e reexibe na proxima opção (seta atual + distPlat), caso dl seja 0026h, ou (seta atual - distPlat), caso dl seja 0028h 
+;		   Esta função verifica se a seta esta na posição mais alta antes de elevar, e verifica se esta na posição mais baixa antes de decrementar.
 ;Recebe: O valor de entrada deve ser passado atravez de parâmetros armazenados na memória.
-;			dx - 
-;			posSeta - Recebe os vaalores possiveis 1, 2 ou 3
+;			dx - Recebe a tecla digitada antes da chamada da função
+;			posSeta - Recebe os valores possiveis 1, 2 ou 3
 ;			distPlat
 ;			platInicial
 ;Retorna: Sem retorno
 	push dx
 	
 	mov ax, 0
-	mov al, posSeta
+	mov al, posSeta										;Recebe a posição atual da seta
 	movzx dx, distPlat
 	mul dx
-	add ax, platInicial
+	add ax, platInicial									;Adiciona a multiplicação entre a distância entre as plataformas e a posSeta, com a platInicial
 	
-	mov dl, 20								
-	mov dh, al
+	mov dl, 20											;Seta sempre estará na coluna 20			
+	mov dh, al											;Atribui a linha com o valor calculado acima
 	call GOTOXY
 	
 	mov eax, black+(black*16)
 	call SETTEXTCOLOR
 	
-	mov al, ' '
+	mov al, ' '											;Apaga a seta
 	call WRITECHAR
 	call WRITECHAR
 	
 	pop dx
 	
-	cmp dx, 0026h
+	cmp dx, 0026h										;Realiza a comparação do valor dx passado com o código para a seta para cima, caso seja igual: será comparado se a posição da seta já é a mais alta, se for, salta para o fim, se não, decrementa a posição da seta; caso seja diferente, o código desvia para LPS1
 	jne LPS1
 	cmp posSeta, 0000h
 	jbe LPS2
 	dec posSeta
 LPS1:	
-	cmp dx, 0028h
+	cmp dx, 0028h										;Realiza a comparação do valor dx passado com o código para a seta para baixo, caso seja igual: será comparado se a posição da seta já é a mais baixa, se for, salta para o fim, se não, incrementa a posição da seta
 	jne LPS2
 	cmp posSeta, 0002h
 	jae LPS2
 	inc posSeta
 LPS2:
 	
-	mov ax, 0
-	mov al, posSeta
+	movzx ax, posSeta									;Preparação para a impressão da seta (utiliza as contas da mesma forma que acima (adiciona e multiplica para atribuir a linha desejada de impressão))
 	movzx dx, distPlat
 	mul dx
 	add ax, platInicial
@@ -292,7 +292,7 @@ LPS2:
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
-	mov al, '-'
+	mov al, '-'											;Impressão da seta
 	call WRITECHAR
 	mov al, '>'
 	call WRITECHAR
@@ -305,25 +305,24 @@ LPS2:
 PrintSeta ENDP	
 
 Bordas PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Objetivo: Desenha todas as bordas do jogo compostas pelo caracter "!"; 2 bordas laterais, borda superior e borda inferior, com a cor da letra vermelha e a cor do fundo preta.
+;Recebe: tMaxX - Quantidade de colunas que compõe o jogo
+;		 tMaxY - Quantidade de linhas que compõe o jogo
+;Retorna: Sem retorno
 	mov eax, red+(black*16)
 	call SETTEXTCOLOR
 	
-	movzx ecx, tMaxX							;Trecho para impressão da primeira linha da matriz do jogo, imprime tMaxX "!"
+	movzx ecx, tMaxX							;Trecho para impressão da primeira linha da matriz do jogo, imprime tMaxX vezes o caracter "!"
 	mov al, '!'
 L1:
 	call WRITECHAR
 	loop L1
 
-	movzx ecx, tMaxY							;Trecho para impressão dos limites laterais do Jogo, imprime tMaxY '!' de cada lado do inicio e fim da barra impressa anteriormente
+	movzx ecx, tMaxY							;Trecho para impressão dos limites laterais do Jogo, imprime tMaxY vezes o caracter '!' de cada lado do inicio e fim da barra impressa anteriormente
 	mov dh, 1
 L2:
 	mov dl, 0
-	call GOTOXY								;IRVINE GOTOXY - Seta o cursor na coordenada(dh, dh)
+	call GOTOXY
 	call WRITECHAR
 
 	mov dl, tMaxX
@@ -337,7 +336,7 @@ L2:
 	mov dl, 0								
 	mov dh, tMaxY
 	call GOTOXY
-	movzx ecx, tMaxX
+	movzx ecx, tMaxX							;Trecho para impressão da ultima linha da matriz do jogo, imprime tMaxX vezes o caracter "!"
 L3:
 	call WRITECHAR
 	loop L3
@@ -349,15 +348,15 @@ L3:
 Bordas ENDP	
 	
 Plataformas PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Objetivo: Imprimir as plataformas do jogo compostas pelo caracter ":", na cor verde
+;Recebe: platInicial
+;		 distPlat
+;Retorna: Sem retorno
 	mov eax, green							;IRVINE green - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR
-	mov ecx, 4
-	mov bx, platInicial
+	mov ecx, 4								;Configura o contador uantidade de plataformas (4)
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	mov bx, platInicial						
 	sub bx, 2
 LP1:
 	mov dl, 1
