@@ -94,19 +94,17 @@ INCLUDE Irvine32.inc
 	
 .code
 LimpaTela PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
-	mov eax, black+(black*16)
-	call SETTEXTCOLOR
+;Objetivo: Limpar a tela do jogo em substituição a função CLRSCR do Irvine, esta função apenas escreve o caracter " "(espaço) em toda a matriz que esta contida no jogo
+;Recebe: Sem parâmetros
+;Retorna: Sem retorno
+	mov eax, black+(black*16)							;Para a função SETTEXTCOLOR deve ser passado al, onde os 4 bits HSB é a cor de fundo e os 4 LSB são a cor da letra, a multiplicação por 16 é equivalente a dar um shift de 4 bits para a esquerda
+	call SETTEXTCOLOR									;Função Irvine: Configura a cor do texto recebendo como parâmetro o registrador eax
 	
 	mov dl, 0
 	mov dh, 0
-	call GOTOXY
+	call GOTOXY											;Função Irvine: Configura o cursor para a linha dh e a coluna dl
 	
-	movzx ecx, tMaxY							
+	movzx ecx, tMaxY
 	
 LLP1:					
 	mov dl, 0
@@ -114,11 +112,10 @@ LLP1:
 	call GOTOXY
 	
 	push ecx
-	
 	movzx ecx, tMaxX
 LLP2:
 	mov al, ' '
-	call WRITECHAR
+	call WRITECHAR										;Função Irvine: Escreve um caracter no terminal
 	loop LLP2
 	
 	pop ecx
@@ -135,7 +132,7 @@ LLP2:
 LimpaTela ENDP
 
 ImpPerso PROC
-;Imprime o personagem na tela
+;Imprime um personagem na tela como sendo o seguinte:
 ;     @
 ;    /#\
 ;    / \
@@ -190,11 +187,11 @@ ImpPerso ENDP
 
 
 delPerso PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Apaga o personagem sobrescrevendo-o pelo caracter " "(espaços)
+;Recebe: O valor de entrada deve ser passado atravez de parâmetros armazenados na memória. Atenção, a posição X e Y passadas representa o caracter "#" exatamente no centro do boneco. Este é o parâmetro de referência para esta função
+;			posXB
+;			posYB
+;Retorna: Sem retorno
 	mov eax, black+(black*16)
 	call SETTEXTCOLOR
 	
@@ -241,11 +238,13 @@ delPerso ENDP
 
 
 PrintSeta PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Apaga a seta da posiçãoImprime uma seta uma linha abaixo da plataforma, na coluna 20
+;Recebe: O valor de entrada deve ser passado atravez de parâmetros armazenados na memória.
+;			dx - 
+;			posSeta - Recebe os vaalores possiveis 1, 2 ou 3
+;			distPlat
+;			platInicial
+;Retorna: Sem retorno
 	push dx
 	
 	mov ax, 0
