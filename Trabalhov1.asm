@@ -730,11 +730,10 @@ fimTempo:
 TelaJogo ENDP
 
 TelaDificuldade PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime a tela de dificuldades
+;Recebe:	tMaxX - Tamanho do jogo em X
+;			nome, bDificuldade1, bDificuldade1, bDificuldade1 - Mensagens salvas na memória 
+;Retorna:	Sem retorno
 	call LimpaTela
 	call Bordas
 	call Plataformas
@@ -778,11 +777,10 @@ TelaDificuldade ENDP
 
 
 TelaInstrucoes PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime a tela de créditos 
+;Recebe:	tMaxX - Tamanho do jogo em X
+;			nome, bcomoJogar, minstrucoes1 .. minstrucoes19 - Mensagens salvas na memória 
+;Retorna:	Sem retorno
 LTI3:
 	call LimpaTela
 	call Bordas
@@ -886,7 +884,7 @@ LTI3:
 	mov eax, green+(black*16)
 	call SETTEXTCOLOR
 	
-	mov al, '-'
+	mov al, '-'							;Imprime as duas setas de indicativo de avançar lateralmente
 	call WRITECHAR
 	mov al, '>'
 	call WRITECHAR
@@ -895,7 +893,7 @@ LTI3:
 	mov dh, tMaxY
 	call GOTOXY
 	
-LTI1:
+LTI1:									;Aguarda o comando das setas laterais, ou "q" para executar a proxima ação
     mov  eax,50
     call Delay
     call ReadKey
@@ -966,7 +964,7 @@ LTI1:
 	mov eax, green+(black*16)
 	call SETTEXTCOLOR
 	
-	mov al, '<'
+	mov al, '<'							;Imprime as duas setas de indicativo de avançar lateralmente
 	call WRITECHAR
 	mov al, '-'
 	call WRITECHAR
@@ -988,7 +986,7 @@ LTI1:
 	mov dh, tMaxY
 	call GOTOXY
 
-LTI2:
+LTI2:									;Aguarda o comando das setas laterais, ou "q" para executar a proxima ação
     mov  eax,50
     call Delay
     call ReadKey
@@ -1002,10 +1000,9 @@ LTI2:
 TelaInstrucoes ENDP
 
 TelaCreditos PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
+;Imprime a tela de créditos 
+;Recebe:	tMaxX - Tamanho do jogo em X
+;			nome, bcreditos, mcreditos1 .. mcreditos12 - Mensagens salvas na memória 
 ;Retorna:	
 	call LimpaTela
 	call Bordas
@@ -1134,11 +1131,10 @@ LTI1:
 TelaCreditos ENDP
 
 SetaTelaPerdeu PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime uma seta na posição desejada das telas de derrota
+;Recebe:	tMaxX - Tamanho do jogo em X
+;			posSeta1 - Variável na memória da posição da seta da tela de derrota
+;Retorna:	Sem retorno
 	push dx
 
 	mov dl, 15
@@ -1204,11 +1200,10 @@ setasai:
 SetaTelaPerdeu ENDP
 
 TelaPerdeu PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
+;Imprime a tela de derrota por colisão
+;Recebe:	mPerdeu1, mPerdeu21, mPerdeu22, mPerdeu3, mPerdeu4, mPerdeu5, mPerdeu6 - Mensagens salvas na memória 
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
 	call LimpaTela
 	call Bordas
 	
@@ -1291,11 +1286,10 @@ TelaPerdeu PROC
 TelaPerdeu ENDP
 
 TelaAcabaTempo PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
+;Imprime a tela de derrota por tempo
+;Recebe:	mPerdeuTempo1, mPerdeu3, mPerdeu4, mPerdeu5, mPerdeu6 - Mensagens salvas na memória 
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
 	call LimpaTela
 	call Bordas
 	
@@ -1364,11 +1358,10 @@ TelaAcabaTempo PROC
 TelaAcabaTempo ENDP
 
 TempoTela PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime o tempo restante do jogador na tela
+;Recebe:	time - Tempo percorrido de jogo
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
 	mov dl, 13
 	mov dh, 1
 	call GOTOXY
@@ -1383,11 +1376,10 @@ TempoTela PROC
 TempoTela ENDP
 	
 ScoreTela PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime a pontuação
+;Recebe:	score - Variável na memória que armazena o valor da pontuação
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
 	mov dl, 30
 	mov dh, 1
 	call GOTOXY
@@ -1402,11 +1394,10 @@ ScoreTela PROC
 ScoreTela ENDP
 
 CorSelPlat PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Imprime as duas cores válidas para aceitar o salto na plataforma
+;Recebe:	corSele - Vetor contendo as duas cores selecionadas para aceitar o salto
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
 	mov dl, 49
 	mov dh, 1
 	call GOTOXY
@@ -1442,7 +1433,13 @@ CorSelPlat PROC
 CorSelPlat ENDP
 	
 ApagaArm PROC
-	mov eax, black+(black*16)							;IRVINE green - Seleção de cores pré definidas no IRVINE
+;Função responsável por apagar as armadilhas já existentes na tela
+;Recebe: 	nArmadilhas - quantidade de armadilhas por plataforma
+;			armadilhas - vetor com as posições x das armadilhas
+;			distPlat - Distância entre as plataformas
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
+	mov eax, black+(black*16)
 	call SETTEXTCOLOR
 
 	mov ecx, 4
@@ -1450,13 +1447,13 @@ ApagaArm PROC
 	sub bx, 2
 	mov esi, 0
 	
-LP1:
+LP1:									;Permuta entre as 4 plataformas
 	mov dh, bl
 	push ecx
 	
 	movzx ecx, nArmadilhas
 	
-LP2:
+LP2:									;Apaga todas as armadilhas em uma plataforma
 	mov dl,armadilhas[esi]
 	call GOTOXY
 	inc esi
@@ -1479,7 +1476,13 @@ LP2:
 ApagaArm ENDP	
 	
 DesenhaArm PROC
-	mov eax, white+(black*16)							;IRVINE green - Seleção de cores pré definidas no IRVINE
+;Função responsável por desenhar as armadilhas
+;Recebe: 	nArmadilhas - quantidade de armadilhas por plataforma
+;			armadilhas - vetor com as posições x das armadilhas
+;			distPlat - Distância entre as plataformas
+;			tMaxX - Tamanho do jogo em X
+;Retorna:	Sem retorno
+	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 
 	mov ecx, 4
@@ -1487,14 +1490,14 @@ DesenhaArm PROC
 	sub bx, 2
 	mov esi, 0
 	
-LP1:
+LP1:									;Permuta entre as 4 plataformas
 	mov dh, bl
 	push ecx
 	
 	movzx ecx, nArmadilhas
 	
-LP2:
-	mov dl,armadilhas[esi]
+LP2:									;Imprime todas as armadilhas em uma plataforma
+	mov dl,armadilhas[esi]	
 	call GOTOXY
 	inc esi
 	mov al, '&'
@@ -1505,7 +1508,7 @@ LP2:
 	sub bl, distPlat
 	loop LP1
 	
-	mov eax, white+(black*16)
+	mov eax, white+(black*16)			;Configura o texto com a cor padrão
 	call SETTEXTCOLOR
 	
 	mov dl, 0
@@ -1516,23 +1519,23 @@ LP2:
 DesenhaArm ENDP
 
 VerificaPosIni PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
+;Função responsável por percorrer o vetor e verificar se o valor a ser inserido já está no vetor
+;Recebe: 	eax - parâmetro passado pela pilha, e que armazena o valor do elemento a ser verifica se já pertence ao vetor
+;			edi - parâmetro passado pela pilha, endereço do vetor a ser comparado
+;			nArmadilhas - numero de armadilhas por platafomas
+;Retorna:	ebx - retorna 1 se o valor fornecido não pertencer ao vetor; ou 0 se pertencer
 	push eax
 	push ecx
 	push edi
 	
 	movzx ecx, nArmadilhas
-	mov ebx, 1
-	cld
-	repne scasb
-	jnz fim
-	mov ebx, 0
+	mov ebx, 1							;Armazena 1 em ebx para a saida, caso não exista o valor fornecido no vetor
+	cld									;Configura a flag como 1 para indicar que a função scasb avançará o vetor
+	repne scasb							;repne - repete enquanto n for igual; scasb - compara o valor em al com o valor apontado por edi (incrementa edi a cada repetição (pois a carry flag é 1)
+	jnz fim								
+	mov ebx, 0							;Troca o valor de ebx para 0, caso já exista o valor no vetor
 	
-fim:
+fim:									;Adiciona na pilha todos os valores dos registradores usados
 	pop edi
 	pop ecx
 	pop eax
@@ -1541,30 +1544,35 @@ fim:
 VerificaPosIni ENDP
 
 CriaArmInicio PROC
-	mov ecx, 4							;numero de plataformas
-	mov ebx, 1
-	mov edx, 0
-	mov edi, OFFSET armadilhas
+;Cria as armadilhas íniciais do jogo
+;Recebe: 	armadilhas - vetor com as posições x das armadilhas
+;			nArmadilhas - quantidade de armadilhas por plataforma
+;			tMaxX - Tamanho do jogo em X
+;Retorna: Sem retorno
+	mov ecx, 4							;Número de plataformas
+	mov ebx, 1							;Variável auxiliar
+	mov edx, 0							;Variável auxiliar
+	mov edi, OFFSET armadilhas			
 	
-L2:
+L2:										;Loop externo: Varia a plataforma da criação da armadilha
 	push ebx
 	push ecx
 	movzx ecx, nArmadilhas
-L1:
-	call Randomize             			;Sets seed
-    movzx eax, tMaxX					;Keeps the range 0 - 8
-	sub eax, 4
+L1:										;Loop interno: Cria a posição das armadilhas de cada uma das 4 plataformas
+	call Randomize						;Configura o uso do Randomize
+    movzx eax, tMaxX					;Define o intervalo válido dos valores gerados aleatoriamente 0~ tamanho máximo em x
+	sub eax, 4							;Retira 4 o intervalo (dois de cada uma das laterais, e dois pela distância dos braços do boneco
 	
-    call RandomRange
-	inc al
-	call VerificaPosIni
-	cmp ebx, 1
+    call RandomRange					;Instancia a chamada do randomico
+	inc al								;Incrementa o valor de retorno 
+	call VerificaPosIni					;Verifica se a posição é válida
+	cmp ebx, 1							;Compara o retorno da função, e desvia o fluxo, caso a posição sorteada já estreja no vetor
 	jne L1
-    mov  armadilhas[edx], al            ;First random number
+    mov  armadilhas[edx], al            ;Transfere o valor aleátorio para a memória
 	inc edx
 	loop L1
 	
-	pop ecx
+	pop ecx								;Reposiciona os registradores para os determinados valores
 	pop ebx
 	movzx eax, nArmadilhas
 	push edx
@@ -1576,26 +1584,29 @@ L1:
 	inc ebx
 	loop L2
 	
-	call DesenhaArm
+	call DesenhaArm						;Desenha as armadilhas
 
 	ret
 CriaArmInicio ENDP
 
 
 TrocaCorPlat PROC
-	call Randomize              ;Sets seed
-    mov  eax, 9					;Keeps the range 0 - 8
-
-    call RandomRange
-	imul ax, TYPE coresDisp
-	mov bx, [coresDisp + ax]	
+;Troca a cor da plaforma mais baixa
+;Recebe: 	coresDisp - Vetor com as cores disponíveis
+;			tMaxX - - Tamanho do jogo em X
+;Retorna: 	corPlatAtual - Cor da platafoma inicial
+    call Randomize							;Configura o uso do Randomize
+	mov  eax, 9								;Armazena o intervalo do valor desejado - número de cores disponíveis
+    call RandomRange						;Sortei um número entre 0 e 8
+	imul ax, TYPE coresDisp					;Multiplica ax pelo tipo do vetor das cores das platformas
+	mov bx, [coresDisp + ax]				;Transfere para bx o conteúdo de coresDisp+ax (contém o código referente a uma cor)
 	
-	mov corPlatAtual, bx
+	mov corPlatAtual, bx					;Transfere para a variável que armazena a cor da plataforma atual
 
 	movzx eax, bx
-	call SETTEXTCOLOR
+	call SETTEXTCOLOR						;Configura a cor do texto
 
-	mov al, tMaxY
+	mov al, tMaxY							;Posiciona o cursor para a impressão da platforma
 	sub al, 5
 	mov dl, 1
 	mov dh, al
@@ -1604,7 +1615,8 @@ TrocaCorPlat PROC
 	movzx eax, tMaxX
 	sub eax, 2
 	mov ecx, eax	
-LTCP1:
+
+LTCP1:										;Imprime a plataforma com a nova cor
 	mov al, ':'
 	call WRITECHAR
 	loop LTCP1
@@ -1620,17 +1632,19 @@ LTCP1:
 TrocaCorPlat ENDP
 	
 main PROC
+;Responsável pela execução principal do jogo
+;Não possui argumentos de entrada nem de saida
 	call CLRSCR								;IRVINE CLRSCR - Limpa a tela
-start:
-	call LimpaTela
-	call Bordas
-	call Plataformas
-	call TelaInicio
-	mov posSeta, 0
+start:										;start - é invocado toda vez que é necessário voltar para tela inicial
+	call LimpaTela							;Instancia a função limpa tela
+	call Bordas								;Instancia a função bordas
+	call Plataformas						;Instancia a função plataformas
+	call TelaInicio							;Instancia a função da tela inicial
+	mov posSeta, 0							;Reseta a posição da seta e da pontuação
 	mov posSeta1, 0
 	mov score, 0
 	
-	mov dl, 20							
+	mov dl, 20								;Configura a posição inicial da seta e imprime
 	mov dh, BYTE PTR [platInicial]
 	call GOTOXY
 	
@@ -1646,19 +1660,19 @@ start:
 	mov dh, tMaxY
 	call GOTOXY
 	
-AguardaTecla1:
-    mov  eax,50          					;Tempo para o SO esperar
-    call Delay           					;(otherwise, some key presses are lost)
-    call ReadKey         					;Busca por entradas no teclado
-    jz   AguardaTecla1      				;Nenhuma tecla pressionada ainda
+AguardaTecla1:								;Trecho responsável por ler as teclas, e printar a seta no lugar desejado
+    mov  eax,50          					;Tempo para o SO esperar (50 milisegundos)
+    call Delay           					;Interrompe a execução do programa pelo tempo em eax = 50 ms
+    call ReadKey         					;Verifica se existe alguma tecla digitada
+    jz   AguardaTecla1      				;Caso nenhuma tecla tenha sido pressionada, retorna para aguardaTecla1
 	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
-	je LS1
-	cmp dx, 0051h
+	je LS1									;Caso seja "enter" direciona o programa para o trecho onde seleciona a proxima tela
+	cmp dx, 0051h							;Caso seja 'q', o programa encerra
 	je fim
-	call PrintSeta
-    jne  AguardaTecla1    					;Se a tecla não for enter, volta para o label AguardaTecla1
+	call PrintSeta							;Caso não seja nenhuma das opções, será chamada a função que reposiciona a seta
+    jne  AguardaTecla1    					;Se o retorno da função PrintSeta não for enter, direciona para AguardaTecla1
 	
-LS1:
+LS1:										;Verifica qual o valor na variável posSeta e direciona para tela correta (tela de jogo, intruções e crédito)
 	cmp posSeta, 0000h
 	je jogo
 	cmp posSeta, 0001h
@@ -1666,7 +1680,7 @@ LS1:
 	cmp posSeta, 0002h
 	je creditos
 	
-jogo:
+jogo:										;Direcionamento para o jogo
 	call TelaDificuldade
 
 	mov dl, 20							
@@ -1685,19 +1699,19 @@ jogo:
 	mov dh, tMaxY
 	call GOTOXY
 	
-AguardaTecla2:
-    mov  eax,50          					;Tempo para o SO esperar
-    call Delay           					;(otherwise, some key presses are lost)
-    call ReadKey         					;Busca por entradas no teclado
-    jz   AguardaTecla2      				;Nenhuma tecla pressionada ainda
-	cmp  dx,000Dh  							;Compara a entrada do teclado com "enter"
+AguardaTecla2:								;Seleção da dificuldade (mesma lógica do aguardaTecla1)
+    mov  eax,50
+    call Delay
+    call ReadKey
+    jz   AguardaTecla2
+	cmp  dx,000Dh
 	je LS2
 	cmp dx, 0051h
 	je fim
 	call PrintSeta
-    jne  AguardaTecla2    					;Se a tecla não for enter, volta para o label AguardaTecla1
+    jne  AguardaTecla2
 	
-LS2:
+LS2:										;Direciona para configurar as dificuldades
 	cmp posSeta, 0000h
 	je facil
 	cmp posSeta, 0001h
@@ -1705,22 +1719,25 @@ LS2:
 	cmp posSeta, 0002h
 	je dificil
 	
-facil:
+facil:										;Nivel fácil: número de armadilhas: 3; tempo: 90
 	mov nArmadilhas, 3	
 	mov quantArmadilhas, 12
 	mov time, 90
+	mov timeMax, 90
 	jmp play
-medio:
+medio:										;Nivel fácil: número de armadilhas: 7; tempo: 60
 	mov nArmadilhas, 7
 	mov quantArmadilhas, 28
 	mov time, 60
+	mov timeMax, 60
 	jmp play
-dificil:
+dificil:									;Nivel fácil: número de armadilhas: 15; tempo: 30
 	mov nArmadilhas, 15	
 	mov quantArmadilhas, 60
 	mov time, 30
+	mov timeMax, 30
 	
-play:
+play:										;Chama a tela de jogo com as configurações selecionadas acima
 	call TelaJogo
 	cmp eax, 0
 	je fim1
@@ -1730,17 +1747,18 @@ play:
 	je fim2
 	jmp start
 	
-instrucoes:
+instrucoes:									;Chama a tela de instruções 
 	call TelaInstrucoes
 	jmp start
 	
-creditos:
+creditos:									;Chama a tela de créditos
 	call TelaCreditos
 	jmp start
 
 	
-fim1:
+fim1:										;Fim principal - esta tela é a tela de perdeu por colisão
 	call TelaPerdeu
+	
 AguardaTecla3:
     mov  eax,50
     call Delay 
@@ -1750,13 +1768,15 @@ AguardaTecla3:
 	je saiAguardaTecla3
 	call SetaTelaPerdeu
     jne  AguardaTecla3
+
 saiAguardaTecla3:
 	cmp posSeta1, 0
 	je start
 	jmp fim
 
-fim2:
+fim2:										;Fim alternativo: esta tela é a tela de perdeu por tempo
 	call TelaAcabaTempo
+
 AguardaTecla4:
     mov  eax,50
     call Delay 
@@ -1766,12 +1786,13 @@ AguardaTecla4:
 	je saiAguardaTecla4
 	call SetaTelaPerdeu
     jne  AguardaTecla4
+
 saiAguardaTecla4:
 	cmp posSeta1, 0
 	je start
 	jmp fim
 	
-fim:
+fim:										;Fim do jogo, executa algumas configurações para não alterar o terminal após a execução 
 	movzx eax, tMaxY
 	inc eax
 	mov dl, 0
