@@ -349,16 +349,14 @@ Bordas ENDP
 	
 Plataformas PROC
 ;Objetivo: Imprimir as plataformas do jogo compostas pelo caracter ":", na cor verde
-;Recebe: platInicial
-;		 distPlat
+;Recebe: platInicial, distPlat, tMaxX - Variáveis na memória
 ;Retorna: Sem retorno
 	mov eax, green							;IRVINE green - Seleção de cores pré definidas no IRVINE
 	call SETTEXTCOLOR
-	mov ecx, 4								;Configura o contador uantidade de plataformas (4)
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	mov ecx, 4								;Configura o contador da quantidade de plataformas (4)
 	mov bx, platInicial						
 	sub bx, 2
-LP1:
+LP1:										;Propaga a execução da impressão de cada plataforma, para as 4 plataformas no jogo
 	mov dl, 1
 	mov dh, bl
 	call GOTOXY
@@ -367,7 +365,7 @@ LP1:
 	movzx eax, tMaxX
 	sub eax, 2
 	mov ecx, eax
-LP2:
+LP2:										;Imprime cada plataforma
 	mov al, ':'
 	call WRITECHAR
 	loop LP2
@@ -380,13 +378,11 @@ LP2:
 	
 	ret
 Plataformas ENDP
-	
+
 TelaInicio PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Objetivo: Imprimir a tela inicial do jogo
+;Recebe: nome, biniciar, bcomoJogar, bcreditos, distPlat, tMaxX - Variáveis na memória
+;Retorna: Sem retorno
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 
@@ -428,30 +424,28 @@ TelaInicio PROC
 TelaInicio ENDP
 
 SorteiaCores PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
-    call Randomize              ;Sets seed
-    mov  eax,9					;Keeps the range 0 - 8
+;Sorteia as cores que liberarão a passagem do jogador para a plataforma acima
+;Recebe:	corSele, coresDisp - Variáveis na memória
+;Retorna:	corSele - Após a função corSele conterá duas cores selecionadase diferentes entre sí
+    call Randomize              		;Configura o uso do Randomize
+    mov  eax,9							;Define o intervalo do aleatório, 9 números
 
-    call RandomRange
-    mov  corSele,ax            ;First random number
+    call RandomRange					;Seleciona um número entre 0 e 8
+    mov  corSele,ax            			;Transfere o valor aleatório para corSele
 
-L1: mov  eax,9
-	call RandomRange
-    cmp ax, corSele          ;Checks if the second number is the same as the first
-    je L1                   		;If it is, repeat call
-    mov corSele[TYPE corSele],ax            ;Second random number
+L1: mov  eax,9							;Define o intervalo do aleatório, 9 números
+	call RandomRange					;Seleciona um número entre 0 e 8
+    cmp ax, corSele						;Compara o segundo valor sorteado com o primeiro
+    je L1                   			;Se for repetido, retorna para L1
+    mov corSele[TYPE corSele],ax        ;Se não for repetido, transfere o valor de ax para corSele[2]
 	
-	;Salva primeira cor
+	;Armazena a primeira cor
 	mov bx, corSele
 	imul bx, TYPE corSele
 	mov ax, [coresDisp + bx]
 	mov corSele, ax
 	
-	;Salva segunda cor
+	;Armazena a segunda cor
 	mov bx, corSele[TYPE corSele]
 	imul bx, TYPE corSele
 	mov ax, [coresDisp + bx]
@@ -461,66 +455,67 @@ L1: mov  eax,9
 SorteiaCores ENDP
 
 ProcSetaDir PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
-	movzx eax, tMaxX
+;Realiza as ações caso a seta pressionada tenha sido a direita, durante o jogo
+;Recebe:	tMaxX, posXB - Variáveis na memória
+;Retorna:	Altera o valor de posXB
+	;Verifica se o jogador por ir para a direita
+	movzx eax, tMaxX					
 	sub eax, 3
-	cmp posXB, al
-	jae fimProcDir
+	cmp posXB, al	
+	jae fimProcDir						;Caso não possa, ir para o fim
 	
-	call delPerso
+	call delPerso						;Caso possa, apaga o jogador da posição atual
 	
-	inc posXB
+	inc posXB							;Define a nova posição
 	mov bl, posXB
 	mov al, tMaxY
 	sub al, 2
 	mov bh, al 
-	call ImpPerso
+	call ImpPerso						;Imprime o personagem
 	
 fimProcDir:
 	ret
 ProcSetaDir ENDP
 
 ProcSetaEsq PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
+;Realiza as ações caso a seta pressionada tenha sido a esquerda, durante o jogo
+;Recebe:	tMaxX, posXB - Variáveis na memória
+;Retorna:	Altera o valor de posXB
+	;Verifica se o jogador por ir para a esquerda
 	cmp posXB, 2
-	jbe fimProcEsq
+	jbe fimProcEsq						;Caso não possa, ir para o fim
 	
-	call delPerso
+	call delPerso						;Caso possa, apaga o jogador da posição atual
 	
-	dec posXB
+	dec posXB							;Define a nova posição
 	mov bl, posXB
 	mov al, tMaxY
 	sub al, 2
 	mov bh, al 
-	call ImpPerso
+	call ImpPerso						;Imprime o personagem
 	
 fimProcEsq:
 	ret	
 ProcSetaEsq ENDP
 
 Colisao PROC
+;Detecta se houve colisão com os obstaculos
+;Recebe:	nArmadilhas, posXB - Variáveis na memória
+;Retorna:	EAX - Retorna 1 em eax se não houve colisão, ou 0 caso haja colisão
 	movzx ecx, nArmadilhas
 	mov edi, 0
 	
-L1:
+L1:										;Repete o laço a quantidade de armadilhas por plataforma
 	mov dl, armadilhas[edi]
-	cmp dl, posXB
+	cmp dl, posXB						;Caso a posição do jogador seja igual a posição de alguma armadilha, direciona o fluxo para colidiu
 	je colidiu
-	inc edi
+	inc edi								;Incrementa o registrador que está contido o endereço do vetor com as posições das armadilhas
 	loop L1
 	
-	mov eax, 1
+	mov eax, 1							;Armazena 1 em eax, indicando que não houve colisão
 	jmp quit
 	
-colidiu:
+colidiu:								;Armazena 0 em eax, indicando que houve colisão
 	mov eax, 0
 	
 quit:
@@ -528,11 +523,11 @@ quit:
 Colisao ENDP
 
 VerificaPos PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
+;Função responsável por percorrer o vetor e verificar se o valor a ser inserido já está no vetor - esta função verifica somente para uma plataforma
+;Recebe: 	eax - parâmetro passado pela pilha, e que armazena o valor do elemento a ser verifica se já pertence ao vetor
+;			edi - parâmetro passado pela pilha, endereço do vetor a ser comparado
+;			nArmadilhas - numero de armadilhas por platafomas
+;Retorna:	ebx - retorna 1 se o valor fornecido não pertencer ao vetor; ou 0 se pertencer
 	push eax
 	push edx
 	push ecx
@@ -542,13 +537,13 @@ VerificaPos PROC
 	movzx ebx, quantArmadilhas
 	sub ebx, ecx
 	add edi, ebx
-	mov ebx, 1
-	cld
-	repne scasb
+	mov ebx, 1							;Armazena 1 em ebx para a saida, caso não exista o valor fornecido no vetor
+	cld									;Configura a flag como 1 para indicar que a função scasb avançará o vetor
+	repne scasb							;repne - repete enquanto n for igual; scasb - compara o valor em al com o valor apontado por edi (incrementa edi a cada repetição (pois a carry flag é 1)
 	jnz fim
-	mov ebx, 0
+	mov ebx, 0							;Troca o valor de ebx para 0, caso já exista o valor no vetor
 	
-fim:
+fim:									;Adiciona na pilha todos os valores dos registradores usados	
 	pop ecx
 	pop edx
 	pop eax
@@ -557,15 +552,14 @@ fim:
 VerificaPos ENDP
 
 PrcSetaCima PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:
-	call Colisao
+;Realiza as ações caso a seta pressionada tenha sido para cima, durante o jogo. Essa função valida a subida, é feita a comparação com a cor selecionada e a se colidiu com algum obstaculo
+;Recebe:	corPlatAtual, corSele, nArmadilhas, armadilhas, score, quantArmadilhas, tMaxX - Variáveis na memória
+;Retorna:	EAX - Retorna 0 se falhou, ou seja, se o jogador não pode subir, e 1 se o jogador pode subir
+	call Colisao						;Instancia a função colidiu
 	cmp eax, 0
-	je diferente
+	je diferente						;Caso tenha colidido, direcionar o fluxo de de execução para diferente
 
+	;Verifica se a cor da plataforna no instante do salto, era compativel com a corSele
 	mov ax, corPlatAtual
 	cmp ax, corSele
 	je igual
@@ -576,10 +570,10 @@ PrcSetaCima PROC
 	movzx ecx, nArmadilhas
 	mov ebx, OFFSET armadilhas
 	
-igual:
-
-	inc score
-	call ApagaArm
+	
+igual:									;Se tanto a cor da plataforma for compativel, quanto não colidiu:
+	inc score							;Pontuação é acrescida
+	call ApagaArm						;Apaga as armadilhas existentes
 	mov ebx, 0
 	movzx eax, nArmadilhas
 	mov edx, 3
@@ -588,7 +582,7 @@ igual:
 	movzx edx, nArmadilhas
 	mov ecx, eax
 	
-shiftByte:
+shiftByte:								;Realiza um shift no vetor afim de resultar no efeito de abaixar as armadilhas (esta função foi implementada antes de  conhecermos o comando que realiza o shift, sendo assim, há formas mais eficientes que está.)
 	mov al, armadilhas[edx]
 	mov armadilhas[ebx], al 
 	inc edx
@@ -598,17 +592,19 @@ shiftByte:
 	movzx ecx, nArmadilhas
 	movzx edx, quantArmadilhas
 	sub edx, ecx
+
+;Funcionamento semelhante a cria armadilhas incial, mas aplicavel somente a uma plataforma
 L1:
-	call Randomize             			;Sets seed
-    movzx eax, tMaxX					;Keeps the range 0 - 8
+	call Randomize
+    movzx eax, tMaxX
 	sub eax, 4
 	
     call RandomRange
-	inc al								;Incrementar para a armadilha não aparecer na lateral do jogo 
+	inc al
 	call VerificaPos
 	cmp ebx, 1
 	jne L1
-    mov  armadilhas[edx], al            ;First random number
+    mov  armadilhas[edx], al 
 	inc edx
 	loop L1
 	
@@ -620,7 +616,7 @@ L1:
 	mov eax, 1
 	jmp fim
 	
-diferente:
+diferente:								;Se diferente retorna que não pode subir, indicado por 0 em aex
 	mov eax, 0
 
 fim:
@@ -628,13 +624,10 @@ fim:
 	
 PrcSetaCima ENDP
 
-
 TelaJogo PROC
-;Imprime uma seta na posição desejada
-;Recebe:	
-;
-;
-;Retorna:	
+;Função responsável por gerenciar a tela de jogo
+;Recebe:	tempo, pontuacao, cor, posXB, posYB, contTime, cont, time - Variáveis na memória
+;Retorna:	EAX - retorna 0 se perdeu por colidir com a plataforma ou por colidir com um obstáculo; 1 caso o usuário tenha pressionado 'q' para sair da tela de jogo; 2 caso o acabou o tempo
 	call LimpaTela	
 	call Bordas
 	call Plataformas
@@ -642,8 +635,9 @@ TelaJogo PROC
 	call ScoreTela
 	call CriaArmInicio
 
-	mov eax, red							;IRVINE red - Seleção de cores pré definidas no IRVINE
-	call SETTEXTCOLOR						;IRVINE SETTEXTCOLOR - Seta a cor do texto e a cor do fundo da fonte
+	;Imprime as informações na tela do jogo
+	mov eax, red
+	call SETTEXTCOLOR
 	mov dl, 6
 	mov dh, 1
 	call GOTOXY
@@ -663,14 +657,14 @@ TelaJogo PROC
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 	
-	mov bl, posXB
+	mov bl, posXB						;Configura a posição do personagem
 	mov bh, posYB
 	call ImpPerso
 	
 	call SorteiaCores
 	call CorSelPlat
 	
-LTJ1:
+LTJ1:									;Executa a cada vez que cont chega em 10 (quase semelhante a 10ms)
 	mov cont, 0
 	inc contTime
 	cmp contTime, 2
@@ -678,9 +672,9 @@ LTJ1:
 	call ScoreTela
 	call TempoTela
 	mov contTime, 0
-LTJ3:
+LTJ3:									;Troca a cor da plataforma cada vez que contTime é maior ou igual a 2
 	call TrocaCorPlat
-LTJ2:
+LTJ2:									;Laço mais interno, verifica o comando digitado pelo usuário
 	mov eax, 50
 	inc cont
 	cmp cont, 10
@@ -691,6 +685,7 @@ LTJ2:
     call ReadKey
     jz LTJ2
 
+	;Seleciona a ação com base no que foi digitado pelo usuário
 	cmp  dx, 0026h
 	je setaCima
 	cmp dx, 0025h
@@ -701,29 +696,35 @@ LTJ2:
 	je fimTelaJogo
 	jmp LTJ2
 	
+;Invoca os procedimentos caso tenha sido pressionado a tecla para cima
 setaCima:
 	call PrcSetaCima
 	cmp eax, 0
-	je fimPerdeuObs					;Alterar para fimTelaJogo
+	je fimPerdeuObs
 	call CorSelPlat
 	jmp LTJ2
 	
+;Invoca os procedimentos caso tenha sido pressionado a tecla para esquerda
 setaEsq:
 	call ProcSetaEsq
 	jmp LTJ2
 	
+;Invoca os procedimentos caso tenha sido pressionado a tecla para direita
 setaDir:
 	call ProcSetaDir
 	jmp LTJ2
 	
+;Invoca os procedimentos caso o jogador tenha perdido por colidir com algum obstáculo
 fimPerdeuObs:
 	mov eax, 0
 	ret
 	
+;Invoca os procedimentos caso o jogador tenha pressionado 'q', para sair do jogo
 fimTelaJogo:	
 	mov eax, 1
 	ret
-	
+
+;Invoca os procedimentos caso o jogador tenha perdido por acabar o tempo limite
 fimTempo:
 	mov eax, 2
 	ret
@@ -741,7 +742,7 @@ TelaDificuldade PROC
 	mov eax, white+(black*16)
 	call SETTEXTCOLOR
 
-	mov dl, 24								;Trecho para imprimir o nome do  jogo na tela de dificuldades
+	mov dl, 24							;Trecho para imprimir o nome do  jogo na tela de dificuldades
 	mov dh, 3
 	call GOTOXY
 	mov edx, OFFSET nome
@@ -1792,6 +1793,7 @@ saiAguardaTecla4:
 	je start
 	jmp fim
 	
+
 fim:										;Fim do jogo, executa algumas configurações para não alterar o terminal após a execução 
 	movzx eax, tMaxY
 	inc eax
