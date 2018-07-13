@@ -2,7 +2,7 @@
 
 Autores: Bruna Zamith Santos e Marcos Augusto Faglioni Junior
 
-Trabalho executado na disciplina de Arquitetura e Organização de Computadores 2 com o objetivo de construir um jogo na linguagem Assembly utilizando a biblioteca Irvine e o montador MASM
+Trabalho executado na disciplina de Arquitetura e Organização de Computadores 2, com o objetivo de construir um jogo na linguagem Assembly utilizando a biblioteca Irvine e o montador MASM
 Para mais detalhes quanto ao projeto e implementação, verificar os arquivos Relatorio_1 e Relatorio_2, o RelatórioFinal contém uma junção e algumas correções com relação aos anteriores, e este é a versão final do trabalho, e são os relatórios apresentados ao professor sobre o desenvolvimento do trabalho.	 
 	
 	-O método de leitura do teclado ou aguarda um tempo foi retirado de (exemplo retirado da biblioteca Irvine: http://programming.msjc.edu/asm/help/index.html?page=source%2Fabout.htm, acessado em 13/06/2017 as 10:30h):
